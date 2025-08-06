@@ -4,7 +4,7 @@ import generateTokenAndSetCookie from "../utils/generateToken.js";
 
 export const signup = async (req, res) => {
   try {
-    const { firstName, lastName, role, email, password, confirmPassword, collegeName, researchPaper } = req.body;
+    const { firstName, lastName, role, email, password, confirmPassword, collegeName, securityKey } = req.body;
 
     if (password !== confirmPassword) {
       return res.status(400).json({ error: "Password didn't match" });
@@ -14,6 +14,12 @@ export const signup = async (req, res) => {
 
     if (user) {
       return res.status(400).json({ error: "email already exists" });
+    }
+
+    if(role === "admin"){
+      if (securityKey !== process.env.SECURITY_KEY){
+        return res.status(400).json({ error: "Security Key not matched" });
+      }
     }
 
     const salt = await bcrypt.genSalt(10);
@@ -26,6 +32,7 @@ export const signup = async (req, res) => {
       password: hashedPassword,
       role,
       collegeName,
+      securityKey
     });
 
     if (newUser) {
@@ -60,6 +67,12 @@ export const login = async (req, res) => {
     if (!user || !isPasswordCorrect) {
       return res.status(400).json({ error: "Invalid Credentials" });
     }
+
+    if(role === "admin"){
+      if (securityKey !== process.env.SECURITY_KEY){
+        return res.status(400).json({ error: "Security Key not matched" });
+      }
+    } 
 
     generateTokenAndSetCookie(user._id, res);
 
