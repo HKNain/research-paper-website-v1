@@ -1,7 +1,9 @@
 import mongoose from "mongoose";
 
+// User Schema ...
+
 const userSchema = new mongoose.Schema({
-    firstName: {
+    firstName: {  
         type: String,
         required: true,
         minlength: 6
@@ -13,16 +15,34 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    title: { 
+        type: String,
+        
+        required: true
+    },
+    degree: {
+        type: String,
+    },
+    Country : {
+        type : String ,
+        required : "true",
+        
+    },
+
+    phoneNumber : {
+        type : String ,
+        default : "",
+    },
     role: {
         type: String,
-        required: true,
         enum: [
             "admin",
-            "reciever",
-            "publisher"
+            "publisher",
+            "reviewer"
         ],
         default: "publisher",
     },
+
     password: {
         type: String,
         required: true,
@@ -31,16 +51,20 @@ const userSchema = new mongoose.Schema({
     collegeName: {
         type: String,
         required: true,
-        default: "",
+        
     },
-    
+    department : {
+        type : String ,
+        default : "",
+    },
     securityKey: {
         type: String,
-        default: "",
-        require: true,
+        default : "",
+        required: true,
         minlength: 6,
 
-    }
+    },
+     
 
 
 }, { timestamps: true });
