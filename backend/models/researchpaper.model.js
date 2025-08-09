@@ -1,5 +1,5 @@
-import mongoose from "mongoose"
 import { v4 as uuidv4 } from 'uuid';
+import mongoose from 'mongoose';
 
 const researchSchema = new mongoose.Schema({
   author: {
@@ -10,17 +10,14 @@ const researchSchema = new mongoose.Schema({
     {
       uniqueId: {
         type: String,
-        default: uuidv4()
+        default: () => uuidv4(), // Generates new UUID for each entry
       },
-
       researchPaperPdfUrl: {
         type: String,
         required: true,
       },
-
       categoryType: {
         type: String,
-        required: true,
         default: "None",
       },
       stats: {
@@ -28,42 +25,37 @@ const researchSchema = new mongoose.Schema({
         enum: ['accepted', 'rejected', 'pending'],
         default: 'pending',
       },
-
       uploadedAt: {
         type: Date,
         default: Date.now,
       },
-
-      reviewerAccepted : [
+      acceptedToBeReviwer: [
         {
-          reviwerEmail : {
-            type : String ,
-            default :"",
+          reviewerEmail: {
+            type: String,
+            default: "",
+          },
+          reviwerApproval: {
+          type: Boolean,
+          default: false
+        }
+        }
+      ],
+      senderName: [
+        {
+          reviewerEmail: {
+            type: String,
+            default: "",
           }
         }
       ],
-      
-      senderName : [
-        {
-          reviwerEmail : {
-            type : String ,
-          }
-        }
-
-      ],
-      
       comment: {
         type: String,
         default: ''
       },
       
-      
-     
     }
   ]
+});
 
-})
-
-const researchPaper = mongoose.model("researchPaper", researchSchema);
-
-export default researchPaper;
+export default mongoose.model("ResearchPaper", researchSchema);
