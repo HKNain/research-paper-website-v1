@@ -1,5 +1,5 @@
 import express from "express";
-import { userProfile, getAllUserWithResearchPapersPosted, getuserResearchPaperToCheck, userPaperResult, sendConfirmationToBeRecieverNotifi, getNotifiToBeReciever } from "../controllers/research.controller.js";
+import { userProfile, getAllUserWithResearchPapersPosted, getuserResearchPaperToCheck, userPaperResult, sendConfirmationToBeRecieverNotifi, getNotifiToBeReciever, AcceptedReviewer, acceptResearchPaperByReviewer } from "../controllers/research.controller.js";
 import protectRoute from "../middleware/protectRoute.js";
 import { adminProtectRoute } from "../middleware/adminProtectRoute.js";
 import { reviewerProtectRoute } from "../middleware/reviewerProtectRo0ute.js";
@@ -13,6 +13,9 @@ router.get("/admin/papers/:id",protectRoute,adminProtectRoute,getuserResearchPap
 router.patch("/admin/papers/:id/result",protectRoute,adminProtectRoute,userPaperResult)
 router.patch("admin/sender/:id",protectRoute, adminProtectRoute , sendConfirmationToBeRecieverNotifi)
 router.get("/profile/notications",protectRoute,reviewerProtectRoute,getNotifiToBeReciever)
+
+router.patch("/reviwerAccepted",protectRoute,reviewerProtectRoute,AcceptedReviewer)
+router.patch("/reviwerResult",protectRoute,reviewerProtectRoute,acceptResearchPaperByReviewer)
 
 
 export default router;
