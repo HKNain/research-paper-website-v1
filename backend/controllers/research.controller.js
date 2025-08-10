@@ -27,12 +27,13 @@ const userProfile = async (req , res )=>{
 
     }
     return res.status(200).json({
-        suceess:"Authorised to get Profile",
+        success:"Authorised to get Profile",
         userDetails
     })
 
   } catch (error){
-
+    console.log("Error in UserProfile Research Controller", error.message);
+    res.status(500).json({ error: "Internal Server Error" });
   } 
 } 
 
