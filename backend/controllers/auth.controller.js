@@ -61,9 +61,17 @@ export const signup = async (req, res) => {
             "Other"        // Fallback option
         ]
     // User details coming from form ...
-    if (!firstName || !role || !email || (!password && password.length >=6 ) || !requiredTitle.includes[title] || !Country  ){
-      return res.status(400).json({error: "Please enter input values correctly "})
-    }
+    if (
+  !firstName ||
+  !email ||
+  !password || password.length < 6 ||
+  !requiredtitle.includes(title) ||
+  !Country ||
+  !collegeName
+) {
+  console.log(firstName, email, password, title, Country, collegeName);
+  return res.status(400).json({ error: "Please enter input values correctly" });
+}
 
     const user = await User.findOne({ email });
 
@@ -103,7 +111,6 @@ export const signup = async (req, res) => {
       phoneNumber,
       department,
     });
-    
 
     if (newUser) {
       generateTokenAndSetCookie(newUser._id, res);
@@ -129,6 +136,7 @@ export const login = async (req, res) => {
   try {
     const { email, password, role, securityKey } = req.body;
     const user = await User.findOne({ email });
+    
     const isPasswordCorrect = await bcrypt.compare(
       password,
       user?.password || ""
@@ -147,6 +155,9 @@ export const login = async (req, res) => {
       if (securityKey !== process.env.REVIEWER_SECURITY_KEYSECURITY_KEY) {
         return res.status(400).json({ error: "Security Key not matched" });
       }
+    }
+    if (user.role!==role){
+        return res.status(400).json({ error: `You are not authorised as for this ${role}` });
     }
 
     generateTokenAndSetCookie(user._id, res);

@@ -3,12 +3,71 @@ import User from "../models/user.model.js";
 import multer from "multer"
 import nodemailer from "nodemailer"
 import { transporter } from "../utils/nodemailer.js";
+import FormData from "form-data";
+import axios from "axios";
 
 // Todo reviwer Acceptance to be a reviwer or not means from sender to reviwerList name if Accepetd then will be provioded link to mail + to Admin also and in accepetd send link of pdf 
 // Todo Make a post of pdf 
 // Todo testing 
 
-//  * Import information regarding userprofile is done !!
+
+
+// Todo Right  Api  is to be removed  
+const IMAGEKIT_PRIVATE_KEY = "private_vnkO3EDEJvdyiW4jTW4i3gBKHWQ=";
+const IMAGEKIT_UPLOAD_URL =  "https://upload.imagekit.io/api/v1/files/upload"
+// Controller
+export const researchSubmit = async (req, res) => {
+  try {
+    const { category } = req.body; // example extra fields
+    const fileBuffer = req.file.buffer; // uploaded file
+    const fileName = req.file.originalname;
+    const isAuthor = await researchPaper.findById(req.user.id)
+
+    // Prepare form for ImageKit
+    const form = new FormData();
+    form.append("file", fileBuffer.toString("base64"));
+    form.append("fileName", fileName);
+
+    // Upload to ImageKit
+    const response = await axios.post(IMAGEKIT_UPLOAD_URL, form, {
+      headers: {
+        ...form.getHeaders(),
+        Authorization: `Basic ${Buffer.from(IMAGEKIT_PRIVATE_KEY + ":").toString("base64")}`,
+      },
+    });
+
+    const fileUrl = response.data.url;
+    // if (isAuthor){
+    //   isAuthor.researchPaperUploads.push({researchPaperPdfUrl:fileUrl,categoryType:category})
+    //   const userResearchPaper = await isAuthor.save()
+    //   console.log(userResearchPaper)
+    // }else {
+    //   const researchPaperLinkDescription = [].push({researchPaperPdfUrl:fileUrl,categoryType:category})
+    //   const userResearchPaper = await researchPaper.create({
+    //    author:req.user._id, 
+    //    researchPaperUploads :  researchPaperLinkDescription
+        
+    //   });
+    //    console.log(userResearchPaper)
+    // }
+    
+    
+    
+    
+    
+
+    return res.status(200).json({
+      message: "Research paper uploaded successfully",
+      fileUrl,
+      
+    });
+
+  } catch (error) {
+    console.log("error in researchPost", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
 
 export const userProfile = async (req, res) => {
   try {
@@ -21,10 +80,11 @@ export const userProfile = async (req, res) => {
       email: user.email,
       role: user.role,
       collegeName: user.collegeName,
-      reseachPapers: userResearchPaper,
+      researchPapers: userResearchPaper,
 
 
     }
+    console.log(userInfo)
     return res.status(200).json({
       success: "user Profile ",
       userInfo
@@ -105,6 +165,7 @@ export const getuserResearchPaperToCheck = async (req, res) => {
     } else if (upload.stats === "rejected") {
       return res.status(404).json({ message: "This Research paper has been rejected earlier " });
     }
+    
     const userInfo = {
       firstName: paper.author.firstName,
       email: paper.author.email,
