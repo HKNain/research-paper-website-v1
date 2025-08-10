@@ -1,6 +1,11 @@
 import { v4 as uuidv4 } from 'uuid';
 import mongoose from 'mongoose';
 
+
+const researchSchema = new mongoose.Schema ({
+    
+})
+
 const researchSchema = new mongoose.Schema({
   author: {
     type: mongoose.Schema.Types.ObjectId,

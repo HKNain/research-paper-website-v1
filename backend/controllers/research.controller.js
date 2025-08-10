@@ -324,62 +324,12 @@ export const AcceptedReviewer = async (req, res) => {
     paper.senderName.pull({ reviewerEmail });
     await paper.save()
     return res.status(200).json({
-      message: " Accepted to be a reviwer !!! "
+        suceess:"Authorised to get Profile",
+        userDetails
     })
 
-  } catch (error) {
-    console.log(" error in AcceptedReviewer  ", error)
-    return res.status(500).json({ message: " Internal server error" })
-  }
-}
+  } catch (error){
 
-export const acceptResearchPaperByReviewer = async (req, res) => {
-  try {
-    const reviewer = req.user;
-    const reviewerEmail = reviewer.email;
-    const { researchPaperUniqueId, result } = req.body;
-
-    const paper = await researchPaper.findOne({
-      "researchPaperUploads.uniqueId": researchPaperUniqueId
-    }).populate("author", "-password");
-
-    if (!paper) {
-      return res.status(404).json({ message: "Research paper not found" });
-    }
-
-    const uploadEntry = paper.researchPaperUploads.find(
-      u => u.uniqueId === researchPaperUniqueId
-    );
-
-    if (!uploadEntry) {
-      return res.status(404).json({ message: "Upload entry not found" });
-    }
-
-    const reviewerObj = uploadEntry.acceptedToBeReviwer.find(
-      r => r.reviewerEmail === reviewerEmail
-    );
-
-    if (!reviewerObj) {
-      return res.status(404).json({ message: "Reviewer not found in accepted list" });
-    }
-
-    reviewerObj.reviwerApproval = result;
-
-    await paper.save();
-
-    res.status(200).json({ message: "Reviewer approval updated successfully" });
-
-  } catch (error) {
-
-  }
-}
-
-
-
-
-
-
-
-
-
+  } 
+} 
 
