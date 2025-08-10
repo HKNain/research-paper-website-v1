@@ -71,7 +71,7 @@ export const researchSubmit = async (req, res) => {
   }
 };
 
-
+//  * Working perfectly 
 export const userProfile = async (req, res) => {
   try {
     const user = req.user
@@ -100,39 +100,101 @@ export const userProfile = async (req, res) => {
 }
 
 // * This is for when admin have to search for via email or unique of uuidv4 and when clicked leadeed to the researchpaper approval and so on 
+// * Done ....
+/* 
+{
+? This is your Data that will look alike for getAllUsers 
+    ! "usefulPapers": [
+        {
+            "email": "arnavgoyal1317@gmail.com",
+            "role": "publisher",
+            "firstName": "arnav",
+            "linkOfPdf": "https://ik.imagekit.io/kwy9fhvlz/Resume_aOPHiVAC8.pdf",
+            "category": "None",
+            "stats": "pending",
+            "uniqueId" : "...."
+        },
+        {
+            "email": "arnavgoyal1317@gmail.com",
+            "role": "publisher",
+            "firstName": "arnav",
+            "linkOfPdf": "https://ik.imagekit.io/kwy9fhvlz/AI_Navigation_Assistant_Roadmap_WKj5xu2ys.pdf",
+            "category": "None",
+            "stats": "pending",
+            "uniqueId" : "...."
+
+        },
+        {
+            "email": "xyz@gmail.com",
+            "role": "reviewer",
+            "firstName": "xyz",
+            "linkOfPdf": "https://ik.imagekit.io/kwy9fhvlz/Fields_of_AI_38Qqe-lqG.pdf",
+            "category": "None",
+            "stats": "pending",
+            "uniqueId" : "...."
+
+        }
+   !]
+}
+*/
 export const getAllUserWithResearchPapersPosted = async (req, res) => {
   try {
-
     const papers = await researchPaper.find()
-      .populate("author", "-password");
-    const usefulPaper = papers.filter((paper) => {
+      .populate("author", "email role firstName"); // only get needed author fields
 
-      if (paper.researchPaperUploads) {
-        return (
-          {
-            email: paper.email,
-            firstName: paper.firstName,
-            uniqueId: paper.uniqueId,
-            _id: paper.author._id
+    const usefulPapers = papers.map((paper) => {
+      return paper.researchPaperUploads.map((upload) => ({
+        email: paper.author.email,
+        role: paper.author.role,
+        firstName: paper.author.firstName,
+        linkOfPdf: upload.researchPaperPdfUrl,
+        category: upload.categoryType,
+        stats: upload.stats,
+        uniqueId : upload.uniqueId
+      }));
+    }).flat()
 
-          }
-        );
-      }
-
-    })
-
-    return res.status(200).json({ usefulPaper });
+    return res.status(200).json({ usefulPapers });
 
   } catch (error) {
-    console.log(" error in getAllUserWithResearchPapersPosted ", error)
-    return res.status(500).json({ message: " Internal server error" })
-
+    console.log("error in getAllUserWithResearchPapersPosted", error);
+    return res.status(500).json({ message: "Internal server error" });
   }
+};
 
-}
 
 // Todo also add total accepted by Reviwers who reviwed by name and accepted  and same for not one ... and also add Reviwers name and so 
 // * This is been all aroun when hitted tio unique id for and where the Admin will have right to click on accept or reject 
+
+/*
+{
+! This is data we will get from frontend it will arranged 
+   ? "success": " Get user Pdf Link ",
+    "usefulPapers": [
+        {
+            "researchPaperPdfUrl": "https://ik.imagekit.io/kwy9fhvlz/Resume_aOPHiVAC8.pdf",
+            "categoryType": "None",
+            "stats": "pending",
+            "comment": "",
+            "_id": "689831903e0d83a4c784635f",
+            "uniqueId": "eaede8fc-f8c7-45a3-9939-898ef4b251a2",
+            "uploadedAt": "2025-08-10T05:43:44.800Z",
+            "acceptedToBeReviwer": [],
+            "senderName": []
+        }
+    ],
+    "reviewrs": [
+        {
+            "_id": "68982cacf433bf668dee2e42",
+            "firstName": "xyz",
+            "email": "xyz@gmail.com",
+            "collegeName": "IIT"
+        }
+   ? ]
+}
+*/
+//  * Works perfectly 
+//  ! mail is to be imoplemented 
 export const getuserResearchPaperToCheck = async (req, res) => {
   try {
 
@@ -143,48 +205,45 @@ export const getuserResearchPaperToCheck = async (req, res) => {
         pass: process.env.EMAIL_PASS  // app password
       }
     });
-    const { id } = req.params.id
-    const paper = await researchPaper.findOne({
+    const { id } = req.params
+    
+    const papers = await researchPaper.findOne({
       "researchPaperUploads.uniqueId": id
-    }).populate("author", "-password");
+    }).populate("author", "email role firstName");
+
     // Todo For sender and accepted should not be there inside it 
-    const reviewrs = await User.find({ role: "reviewer" }).select("-password")
 
-    const reviewrsInfo = {
-      firstName: reviewrs.firstName,
-      email: reviewrs.email,
-      stats: reviewrs.status,
-      _id: reviewrs._id,
+    if (!papers) {
 
-    }
-
-    if (!paper) {
       return res.status(404).json({ message: "Research paper not found" });
     }
-    const upload = paper.researchPaperUploads.find(u => u.uniqueId === id);
-    if (upload.stats === "accepted") {
-      return res.status(404).json({ message: "This Research paper has been accepted earlier " });
-
-    } else if (upload.stats === "rejected") {
-      return res.status(404).json({ message: "This Research paper has been rejected earlier " });
+    const usefulPapers = papers.researchPaperUploads.filter((paper) => {
+      if (paper.uniqueId === id )
+        {
+        return {
+          paper
+        }
     }
+    })
+
+    const reviewrs = await User.find({ role: "reviewer" }).select("firstName email collegeName")
+    console.log("reviwers",reviewrs)
+
+  
+
+    const upload = papers.researchPaperUploads.find(u => u.uniqueId === id);
+    // if (upload.stats === "accepted") {
+    //   return res.status(404).json({ message: "This Research paper has been accepted earlier " });
+
+    // } else if (upload.stats === "rejected") {
+    //   return res.status(404).json({ message : "This Research paper has been rejected earlier " });
+    // }
     
-    const userInfo = {
-      firstName: paper.author.firstName,
-      email: paper.author.email,
-      link: paper.researchPaperPdfUrl,
-      uploadedAt: paper.uploadedAt,
-      category: paper.category,
-      uniqueId: paper.uniqueId ,
-      acceptedToBeReviwer :paper.acceptedToBeReviwer , 
-      senderName: paper.senderName
-
-    }
-
+    
     res.status(200).json({
       success: " Get user Pdf Link ",
-      userInfo,
-      reviewrsInfo
+      usefulPapers,
+      reviewrs
     });
   } catch (error) {
     console.log(" error in getuserResearchPaperToCheck ", error)
@@ -194,15 +253,69 @@ export const getuserResearchPaperToCheck = async (req, res) => {
 
 }
 
+/*
 
+* Works perfectly 
+
+{
+ ! This is how its will look see 1st one after accepted 
+  ?  "message": "Paper result updated successfully",
+    "paper": {
+        "_id": "689831903e0d83a4c784635e",
+        "author": {
+            "_id": "68982c45f433bf668dee2e3c",
+            "firstName": "arnav",
+            "email": "arnavgoyal1317@gmail.com",
+            "title": "CA",
+            "Country": "Ind",
+            "phoneNumber": "",
+            "role": "publisher",
+            "collegeName": "IIT",
+            "department": "",
+            "createdAt": "2025-08-10T05:21:09.063Z",
+            "updatedAt": "2025-08-10T05:21:09.063Z",
+            "__v": 0
+        },
+        "researchPaperUploads": [
+            {
+                "researchPaperPdfUrl": "https://ik.imagekit.io/kwy9fhvlz/Resume_aOPHiVAC8.pdf",
+                "categoryType": "None",
+                "stats": "accepted",
+                "comment": "Hello sir Your paper is approved to be published ",
+                "_id": "689831903e0d83a4c784635f",
+                "uniqueId": "eaede8fc-f8c7-45a3-9939-898ef4b251a2",
+                "uploadedAt": "2025-08-10T05:43:44.800Z",
+                "acceptedToBeReviwer": [],
+                "senderName": []
+            },
+            {
+                "researchPaperPdfUrl": "https://ik.imagekit.io/kwy9fhvlz/AI_Navigation_Assistant_Roadmap_WKj5xu2ys.pdf",
+                "categoryType": "None",
+                "stats": "pending",
+                "comment": "",
+                "_id": "68983763771b7c844e1896ab",
+                "uniqueId": "d199a0da-bf2f-410d-b12e-badc6319b657",
+                "uploadedAt": "2025-08-10T06:08:35.496Z",
+                "acceptedToBeReviwer": [],
+                "senderName": []
+            }
+        ],
+        "__v": 1
+   ? }
+}
+
+
+*/
+//  ! mail is to be implemneted 
 export const userPaperResult = async (req, res) => {
   try {
     //  * id is of paperUniqueId 
     const { result, comments } = req.body;
-    const { id } = req.params.id
+    const { id } = req.params
+    console.log ( result , comments , id );
     const paper = await researchPaper.findOne({
       "researchPaperUploads.uniqueId": id
-    }).populate("author", "-password");
+    }).populate("author", "-password -securityKey");
 
     if (!paper) {
       return res.status(404).json({ message: "Research paper not found" });
@@ -212,19 +325,8 @@ export const userPaperResult = async (req, res) => {
     upload.stats = result;
     await paper.save();
 
-    await transporter.sendMail({
-      from: `"Research Portal" <${process.env.EMAIL_USER}>`,
-      to: paper.author.email, // send email to paper's author
-      subject: `Your Research Paper Has Been ${result.toUpperCase()}`,
-      html: `
-        <h3>Hello ${paper.author.firstName},</h3>
-        <p><b>Status:</b> ${result}</p>
-        <p><b>Reviewer Comments:</b> ${comments || "No comments provided"}</p>
-        <p><a href="${upload.pdfUrl || paper.researchPaperPdfUrl}">Click here to view your paper</a></p>
-        <br/>
-        <p>Thank you,<br/>Research Portal Team</p>
-      `
-    });
+    
+    console.log("paper",paper)
 
     res.status(200).json({
       message: "Paper result updated successfully",
@@ -235,40 +337,45 @@ export const userPaperResult = async (req, res) => {
 
   }
 
-
 }
-//  * This is for sending mail and notification to reviwer
+
+
+
+/*
+! Add Mail to this 
+* This is means that reviwerEMail is addedd inside senderName by taking reviwert Email and uniqueId as parasms   
+*/
+// * WOrking perfectly 
 export const sendConfirmationToBeRecieverNotifi = async (req, res) => {
   try {
     // * Object Id of reviwer 
-    const { id } = req.params.id
-    const { uniqueId } = req.body
-    const reviewr = await User.findOne({ email }).select("-password")
+    const { id : uniqueId } = req.params
+    console.log (uniqueId)
+    const { email } = req.body
+    const reviewr = await User.findOne({email}).select("-password -securityKey")
+    if ( !reviewr) {
+      return res.status(404).json({error : " Reviwer Not found "})
+    }
     const reviwerEmail = reviewr.email
-    const paper = await researchPaper.findOne(
-      { "researchPaperUploads.uniqueId": uniqueId },
-      { researchPaperUploads: { $elemMatch: { uniqueId } } }
-    ).populate("author", "-password")
-
-    paper.senderName.push({ reviwerEmail });
-    await transporter.sendMail({
-      from: `"Research Portal" <${process.env.EMAIL_USER}>`,
-      to: reviwerEmail, // send email to paper's author
-      subject: `An Email has been come from Admin `,
-      //  Todo Add url of notification !!!!      
-      html: `
-  <h3>Hello ${reviewr.firstName},</h3>
-  <p><b>An email has been received from Admin regarding ${paper.category}.</b></p>
-  <p>
-    Click here to visit the notification url:
-  
-    <a href="${xyz}">Confirm to be a reviewer</a>
-  </p>
-  <br/>
-  <p>Thank you</p>
-`
-    });
-    return res.status(200).json({ message: "Notification send to be reviwer  " })
+    const paper = await researchPaper.findOne({
+      "researchPaperUploads.uniqueId": uniqueId
+    })
+    console.log(paper)
+     const mainPaper = paper.researchPaperUploads.filter((paper) => {
+      if (paper.uniqueId === uniqueId )
+        {
+        return paper
+    }
+    })
+    if (!mainPaper){
+      return  res.status(404).json({error : " There is no such paper "})
+    }
+    
+    mainPaper[0].senderName.push({ reviwerEmail });
+    const sendNotification = await paper.save()
+    return res.status(200).json({ 
+      message: "Notification has been send to be reviwer  " ,
+    })
 
 
 
@@ -279,11 +386,16 @@ export const sendConfirmationToBeRecieverNotifi = async (req, res) => {
   }
 }
 
+
+
+
 export const getNotifiToBeReciever = async (req, res) => {
   try {
     const user = req.user
     const reviewerEmail = user.email
-    const paper = await researchPaper.find().populate("author", "-password")
+    const paper = await researchPaper.find({
+      
+    }).populate("author", "-password -securityKey")
 
 
     const reviewerEmailinsideSenderGroup = paper.filter((u) => {
