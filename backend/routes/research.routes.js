@@ -20,8 +20,8 @@ router.patch("/admin/papers/:id/result",protectRoute,adminProtectRoute,userPaper
 router.patch("/admin/sender/:id",protectRoute, adminProtectRoute , sendConfirmationToBeRecieverNotifi)
 router.get("/profile/notifications",protectRoute,reviewerProtectRoute,getNotifiToBeReciever)
 
-router.patch("/reviwerAccepted",protectRoute,reviewerProtectRoute,AcceptedReviewer)
-router.patch("/reviwerResult",protectRoute,reviewerProtectRoute,acceptResearchPaperByReviewer)
+router.patch("/reviwerAccepted/:id",protectRoute,reviewerProtectRoute,AcceptedReviewer)
+router.patch("/reviwerResult/:id",protectRoute,reviewerProtectRoute,acceptResearchPaperByReviewer)
 
 
 export default router;

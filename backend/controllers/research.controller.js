@@ -6,6 +6,79 @@ import { transporter } from "../utils/nodemailer.js";
 import FormData from "form-data";
 import axios from "axios";
 
+/*
+
+! This is How Schema Willl Lokk like for research paper 
+*{
+  "_id": {
+    "$oid": "689831903e0d83a4c784635e"
+  },
+  ?"author": {
+    "$oid": "68982c45f433bf668dee2e3c"
+  },
+  ?"researchPaperUploads": [
+    {
+    ?  "researchPaperPdfUrl": "https://ik.imagekit.io/kwy9fhvlz/Resume_aOPHiVAC8.pdf",
+    ?  "categoryType": "None",
+     ? "stats": "accepted",
+      "comment": "Hello sir Your paper is approved to be published ",
+      "_id": {
+        "$oid": "689831903e0d83a4c784635f"
+      },
+     ? "uniqueId": "eaede8fc-f8c7-45a3-9939-898ef4b251a2",
+      "uploadedAt": {
+        "$date": "2025-08-10T05:43:44.800Z"
+      },
+     ? "acceptedToBeReviwer": [
+        {
+          "reviewerEmail": "xyz@gmail.com",
+          "reviwerApproval": true,
+          "_id": {
+            "$oid": "6898e2b095cd58d6633e8b54"
+          }
+        }
+      ],
+     ? "senderName": [
+        {
+          "reviewerEmail": "",
+          "_id": {
+            "$oid": "6898a16162f449de938080a3"
+          }
+        },
+        {
+          "reviewerEmail": "",
+          "_id": {
+            "$oid": "6898c15b6c05bccfb00c50ee"
+          }
+        },
+        {
+          "reviewerEmail": "",
+          "_id": {
+            "$oid": "6898c1ff979296c675f9d2a8"
+          }
+        }
+      ]
+    },
+    {
+      "researchPaperPdfUrl": "https://ik.imagekit.io/kwy9fhvlz/AI_Navigation_Assistant_Roadmap_WKj5xu2ys.pdf",
+      "categoryType": "None",
+      "stats": "pending",
+      "comment": "",
+      "_id": {
+        "$oid": "68983763771b7c844e1896ab"
+      },
+      "uniqueId": "d199a0da-bf2f-410d-b12e-badc6319b657",
+      "uploadedAt": {
+        "$date": "2025-08-10T06:08:35.496Z"
+      },
+      "acceptedToBeReviwer": [],
+      "senderName": []
+    }
+  ],
+  "__v": 6
+*}
+
+*/
  
 
 
@@ -386,65 +459,149 @@ export const sendConfirmationToBeRecieverNotifi = async (req, res) => {
   }
 }
 
+ 
+/*
 
+{
+! Mail is to be send 
+! This is how it looks alike when in resposne send 
+   * "success": true,
+    "message": "Get all notifications regarding being a reviewer",
+    "matchingPapers": [
+        {
+            "author": {
+                "_id": "68982c45f433bf668dee2e3c",
+                "firstName": "arnav",
+                "email": "arnavgoyal1317@gmail.com",
+                "title": "CA",
+                "Country": "Ind",
+                "phoneNumber": "",
+                "role": "publisher",
+                "collegeName": "IIT",
+                "department": "",
+                "createdAt": "2025-08-10T05:21:09.063Z",
+                "updatedAt": "2025-08-10T05:21:09.063Z",
+                "__v": 0
+            },
+            "uploads": [
+                {
+                    "researchPaperPdfUrl": "https://ik.imagekit.io/kwy9fhvlz/Resume_aOPHiVAC8.pdf"
+                }
+            ]
+        }
+   * ]
+}
 
+*/
 
 export const getNotifiToBeReciever = async (req, res) => {
   try {
     const reviewerEmail = req.user.email;
 
-    const papers = await researchPaper.find().populate("author", "-password -securityKey");
+    const papers = await researchPaper
+      .find()
+      .populate("author", "-password -securityKey");
 
-    // Filter papers that have at least one upload with the reviewerEmail inside senderName
-    console.log(papers[0].researchPaperUploads[0])
-    const matchingPapers = papers.filter(paper =>
-      paper.researchPaperUploads.some(upload =>
-        
-        upload.senderName.some(sender => sender.reviewerEmail === reviewerEmail)
-      )
-    );
-    // console.log (matchingPapers)
+    const matchingPapers = papers
+      .map(paper => {
+        const relevantUploads = paper.researchPaperUploads.filter(upload =>
+          upload.senderName.some(sender => sender.reviewerEmail === reviewerEmail)
+        );
+
+        if (relevantUploads.length > 0) {
+          return {
+            author: paper.author,
+            uploads: relevantUploads.map(upload => ({
+              researchPaperPdfUrl: upload.researchPaperPdfUrl,
+              uniqueId : upload.uniqueId
+            }))
+          };
+        }
+        return null;
+      })
+      .filter(Boolean);
 
     return res.status(200).json({
       success: true,
       message: "Get all notifications regarding being a reviewer",
-      papers: matchingPapers
+      matchingPapers
     });
 
   } catch (error) {
-    console.log("Error in getNotifiToBeReciever:", error);
+    console.error("Error in getNotifiToBeReciever:", error);
     return res.status(500).json({ message: "Internal server error" });
   }
 };
 
+/*
+! mail is to be added 
+! This is what I get ""
+*{
+    "message": "Accepted to be a reviewer!",
+*}
+* Works fine 
+*/
 export const AcceptedReviewer = async (req, res) => {
   try {
-    const reviewer = req.user
-    const reviewerEmail = reviewer.email
-    const { researchPaperUniqueId: id } = req.body
-    const paper = await researchPaper.findOne(
-      { "researchPaperUploads.uniqueId": researchPaperUniqueId },
-      { researchPaperUploads: { $elemMatch: { researchPaperUniqueId } } }
-    ).populate("author", "-password")
+    const reviewerEmail = req.user.email;
+    const { id: uniqueId } = req.params;
 
-    paper.reviewerAccepted.push({ reviewerEmail })
-    paper.senderName.pull({ reviewerEmail });
-    await paper.save()
+    
+    const paper = await researchPaper.findOne({
+      "researchPaperUploads.uniqueId": uniqueId
+    }).populate("author", "-password -securityKey");
+
+    if (!paper) {
+      return res.status(404).json({ message: "Research paper not found" });
+    }
+
+    const upload = paper.researchPaperUploads.find(u => u.uniqueId === uniqueId);
+    if (!upload) {
+      return res.status(404).json({ message: "Upload not found" });
+    }
+
+    const alreadyAccepted = upload.acceptedToBeReviwer.some(
+      r => r.reviewerEmail === reviewerEmail
+    );
+    if (alreadyAccepted) {
+      return res.status(400).json({ message: "Reviewer already accepted" });
+    }
+
+    upload.acceptedToBeReviwer.push({
+      reviewerEmail,
+    });
+
+    upload.senderName = upload.senderName.filter(
+      sender => sender.reviewerEmail !== reviewerEmail
+    );
+
+    await paper.save();
+
     return res.status(200).json({
-      message: " Accepted to be a reviwer !!! "
-    })
+      message: "Accepted to be a reviewer!"
+    });
 
   } catch (error) {
-    console.log(" error in AcceptedReviewer  ", error)
-    return res.status(500).json({ message: " Internal server error" })
+    console.log("Error in AcceptedReviewer:", error);
+    return res.status(500).json({ message: "Internal server error" });
   }
-}
+};
+/*
+! Mail is to be added 
+! This is What we see 
+
+*{
+    "message": "Reviewer approval updated successfully"
+*}
+* Working perfectly 
+*/
 
 export const acceptResearchPaperByReviewer = async (req, res) => {
   try {
     const reviewer = req.user;
     const reviewerEmail = reviewer.email;
-    const { researchPaperUniqueId, result } = req.body;
+    const {id : researchPaperUniqueId  } = req.params
+    const { result } = req.body;
 
     const paper = await researchPaper.findOne({
       "researchPaperUploads.uniqueId": researchPaperUniqueId
@@ -477,7 +634,8 @@ export const acceptResearchPaperByReviewer = async (req, res) => {
     res.status(200).json({ message: "Reviewer approval updated successfully" });
 
   } catch (error) {
-
+    console.log("Error in acceptResearchPaperByReviewer:", error);
+    return res.status(500).json({ message: "Internal server error" });
   }
 }
 
