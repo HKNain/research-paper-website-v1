@@ -6,13 +6,13 @@ import { transporter } from "../utils/nodemailer.js";
 import FormData from "form-data";
 import axios from "axios";
 
-// Todo reviwer Acceptance to be a reviwer or not means from sender to reviwerList name if Accepetd then will be provioded link to mail + to Admin also and in accepetd send link of pdf 
-// Todo Make a post of pdf 
-// Todo testing 
+ 
 
 
 
 // Todo Right  Api  is to be removed  
+// Todo isme na Nodemailer se user ke pass mail bhejni h usme pdf Usrl link is to be include in it 
+
 const IMAGEKIT_PRIVATE_KEY = "private_vnkO3EDEJvdyiW4jTW4i3gBKHWQ=";
 const IMAGEKIT_UPLOAD_URL =  "https://upload.imagekit.io/api/v1/files/upload"
 // Controller
@@ -21,7 +21,7 @@ export const researchSubmit = async (req, res) => {
     const { category } = req.body; // example extra fields
     const fileBuffer = req.file.buffer; // uploaded file
     const fileName = req.file.originalname;
-    const isAuthor = await researchPaper.findById(req.user.id)
+    const isAuthor = await researchPaper.findOne({author:req.user.id})
 
     // Prepare form for ImageKit
     const form = new FormData();
@@ -37,24 +37,27 @@ export const researchSubmit = async (req, res) => {
     });
 
     const fileUrl = response.data.url;
-    // if (isAuthor){
-    //   isAuthor.researchPaperUploads.push({researchPaperPdfUrl:fileUrl,categoryType:category})
-    //   const userResearchPaper = await isAuthor.save()
-    //   console.log(userResearchPaper)
-    // }else {
-    //   const researchPaperLinkDescription = [].push({researchPaperPdfUrl:fileUrl,categoryType:category})
-    //   const userResearchPaper = await researchPaper.create({
-    //    author:req.user._id, 
-    //    researchPaperUploads :  researchPaperLinkDescription
+    // const isAuthorExisted = await isAuthor.autg
+    if (isAuthor){
+      isAuthor.researchPaperUploads.push({
+        researchPaperPdfUrl : fileUrl,
+        categoryType:category
+       })
+      // isAuthor.researchPaperUploads.push({researchPaperPdfUrl:fileUrl,categoryType:category})
+      const userResearchPaper = await isAuthor.save()
+      console.log(userResearchPaper)
+    }else {
+      // const researchPaperLinkDescription = [].push({researchPaperPdfUrl:fileUrl,categoryType:category})
+      const userResearchPaper = await researchPaper.create({
+       author:req.user._id, 
+       researchPaperUploads :  [{
+        researchPaperPdfUrl : fileUrl,
+        categoryType:category
+       }]
         
-    //   });
-    //    console.log(userResearchPaper)
-    // }
-    
-    
-    
-    
-    
+      });
+       console.log(userResearchPaper)
+    }
 
     return res.status(200).json({
       message: "Research paper uploaded successfully",
@@ -324,12 +327,62 @@ export const AcceptedReviewer = async (req, res) => {
     paper.senderName.pull({ reviewerEmail });
     await paper.save()
     return res.status(200).json({
-        suceess:"Authorised to get Profile",
-        userDetails
+      message: " Accepted to be a reviwer !!! "
     })
 
-  } catch (error){
+  } catch (error) {
+    console.log(" error in AcceptedReviewer  ", error)
+    return res.status(500).json({ message: " Internal server error" })
+  }
+}
 
-  } 
-} 
+export const acceptResearchPaperByReviewer = async (req, res) => {
+  try {
+    const reviewer = req.user;
+    const reviewerEmail = reviewer.email;
+    const { researchPaperUniqueId, result } = req.body;
+
+    const paper = await researchPaper.findOne({
+      "researchPaperUploads.uniqueId": researchPaperUniqueId
+    }).populate("author", "-password");
+
+    if (!paper) {
+      return res.status(404).json({ message: "Research paper not found" });
+    }
+
+    const uploadEntry = paper.researchPaperUploads.find(
+      u => u.uniqueId === researchPaperUniqueId
+    );
+
+    if (!uploadEntry) {
+      return res.status(404).json({ message: "Upload entry not found" });
+    }
+
+    const reviewerObj = uploadEntry.acceptedToBeReviwer.find(
+      r => r.reviewerEmail === reviewerEmail
+    );
+
+    if (!reviewerObj) {
+      return res.status(404).json({ message: "Reviewer not found in accepted list" });
+    }
+
+    reviewerObj.reviwerApproval = result;
+
+    await paper.save();
+
+    res.status(200).json({ message: "Reviewer approval updated successfully" });
+
+  } catch (error) {
+
+  }
+}
+
+
+
+
+
+
+
+
+
 

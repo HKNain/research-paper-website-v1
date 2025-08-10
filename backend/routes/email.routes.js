@@ -1,5 +1,5 @@
 import express from "express";
-import mailSender from "../utils/emailSender.js";
+import {mailSender} from "../utils/emailSender.js";
 
 const router = express.Router();
 

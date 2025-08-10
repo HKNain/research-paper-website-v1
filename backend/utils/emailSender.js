@@ -29,6 +29,6 @@ export const mailSender = async (req, res) => {
   } catch (error) {
     console.log("Error in sending mail through node mailer")
     console.log(error.message);
-    res.status(502).json({message: "Email wasn't sent"})
+    res.status(502).json({message: "Email wasn'ta sent"})
   }
 };
