@@ -18,7 +18,7 @@ router.get("/admin/papers",protectRoute,adminProtectRoute,getAllUserWithResearch
 router.get("/admin/papers/:id",protectRoute,adminProtectRoute,getuserResearchPaperToCheck)
 router.patch("/admin/papers/:id/result",protectRoute,adminProtectRoute,userPaperResult)
 router.patch("/admin/sender/:id",protectRoute, adminProtectRoute , sendConfirmationToBeRecieverNotifi)
-router.get("/profile/notications",protectRoute,reviewerProtectRoute,getNotifiToBeReciever)
+router.get("/profile/notifications",protectRoute,reviewerProtectRoute,getNotifiToBeReciever)
 
 router.patch("/reviwerAccepted",protectRoute,reviewerProtectRoute,AcceptedReviewer)
 router.patch("/reviwerResult",protectRoute,reviewerProtectRoute,acceptResearchPaperByReviewer)

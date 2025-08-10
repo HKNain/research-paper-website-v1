@@ -350,13 +350,13 @@ export const sendConfirmationToBeRecieverNotifi = async (req, res) => {
   try {
     // * Object Id of reviwer 
     const { id : uniqueId } = req.params
-    console.log (uniqueId)
     const { email } = req.body
     const reviewr = await User.findOne({email}).select("-password -securityKey")
     if ( !reviewr) {
       return res.status(404).json({error : " Reviwer Not found "})
     }
     const reviwerEmail = reviewr.email
+    // console.log(reviwerEmail)
     const paper = await researchPaper.findOne({
       "researchPaperUploads.uniqueId": uniqueId
     })
@@ -371,7 +371,7 @@ export const sendConfirmationToBeRecieverNotifi = async (req, res) => {
       return  res.status(404).json({error : " There is no such paper "})
     }
     
-    mainPaper[0].senderName.push({ reviwerEmail });
+    mainPaper[0].senderName.push({ reviewerEmail :reviwerEmail});
     const sendNotification = await paper.save()
     return res.status(200).json({ 
       message: "Notification has been send to be reviwer  " ,
@@ -391,39 +391,31 @@ export const sendConfirmationToBeRecieverNotifi = async (req, res) => {
 
 export const getNotifiToBeReciever = async (req, res) => {
   try {
-    const user = req.user
-    const reviewerEmail = user.email
-    const paper = await researchPaper.find({
-      
-    }).populate("author", "-password -securityKey")
+    const reviewerEmail = req.user.email;
 
+    const papers = await researchPaper.find().populate("author", "-password -securityKey");
 
-    const reviewerEmailinsideSenderGroup = paper.filter((u) => {
-      if (u.researchPaperUploads.senderName.reviewerEmail === reviewerEmail) {
+    // Filter papers that have at least one upload with the reviewerEmail inside senderName
+    console.log(papers[0].researchPaperUploads[0])
+    const matchingPapers = papers.filter(paper =>
+      paper.researchPaperUploads.some(upload =>
+        
+        upload.senderName.some(sender => sender.reviewerEmail === reviewerEmail)
+      )
+    );
+    // console.log (matchingPapers)
 
-        return (
-          {
-            category: u.categoryType,
-            uploadedAt: u.uploadedAt,
-            uniqueId: u.uniqueId,
-            userName: paper.author.firstName,
-            // reserachparesearchpaperModelId : u._id  
-          }
-        )
-
-      }
-    })
     return res.status(200).json({
-      success: " Get all Notifi regarding to be a reviwer ",
-      reviewerEmailinsideSenderGroup
-    })
+      success: true,
+      message: "Get all notifications regarding being a reviewer",
+      papers: matchingPapers
+    });
 
   } catch (error) {
-    console.log(" error in getNotifiToBeReciever  ", error)
-    return res.status(500).json({ message: " Internal server error" })
-
+    console.log("Error in getNotifiToBeReciever:", error);
+    return res.status(500).json({ message: "Internal server error" });
   }
-}
+};
 
 export const AcceptedReviewer = async (req, res) => {
   try {
