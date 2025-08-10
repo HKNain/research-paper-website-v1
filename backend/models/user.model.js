@@ -6,7 +6,7 @@ const userSchema = new mongoose.Schema({
     firstName: {  
         type: String,
         required: true,
-        minlength: 6
+        
     },
     lastName: {
         type: String,
@@ -59,7 +59,7 @@ const userSchema = new mongoose.Schema({
     },
     securityKey: {
         type: String,
-        default : "",
+        default : "4378438",
         required: true,
         minlength: 6,
 
