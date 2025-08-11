@@ -23,13 +23,10 @@ export const signup = async (req, res) => {
             "Mr.",
             "Mrs.",
             "Miss",
-            "Ms.",
-            "Mx.",      
+            "Ms.",      
             "Dr.",      
             "Prof.",    
-            "Engr.",    
-            "Fr.",      
-            "Rev."      
+            "Engr.",     
         ]
 
         const requiredtitle = [
