@@ -142,6 +142,68 @@ export const researchSubmit = async (req, res) => {
   }
 };
 
+/*
+{
+! DOne 
+   * "success": "user Profile ",
+    "userInfo": {
+        "firstName": "arnav",
+        "email": "arnavgoyal1317@gmail.com",
+        "role": "publisher",
+        "collegeName": "IIT",
+        "researchPapers": [
+            {
+                "_id": "689831903e0d83a4c784635e",
+                "author": "68982c45f433bf668dee2e3c",
+                "researchPaperUploads": [
+                    {
+                        "researchPaperPdfUrl": "https://ik.imagekit.io/kwy9fhvlz/Resume_aOPHiVAC8.pdf",
+                        "categoryType": "None",
+                        "stats": "accepted",
+                        "comment": "Hello sir Your paper is approved to be published ",
+                        "_id": "689831903e0d83a4c784635f",
+                        "uniqueId": "eaede8fc-f8c7-45a3-9939-898ef4b251a2",
+                        "uploadedAt": "2025-08-10T05:43:44.800Z",
+                        "acceptedToBeReviwer": [
+                            {
+                                "reviewerEmail": "xyz@gmail.com",
+                                "reviwerApproval": true,
+                                "_id": "6898e2b095cd58d6633e8b54"
+                            }
+                        ],
+                        "senderName": [
+                            {
+                                "reviewerEmail": "",
+                                "_id": "6898a16162f449de938080a3"
+                            },
+                            {
+                                "reviewerEmail": "",
+                                "_id": "6898c15b6c05bccfb00c50ee"
+                            },
+                            {
+                                "reviewerEmail": "",
+                                "_id": "6898c1ff979296c675f9d2a8"
+                            }
+                        ]
+                    },
+                    {
+                        "researchPaperPdfUrl": "https://ik.imagekit.io/kwy9fhvlz/AI_Navigation_Assistant_Roadmap_WKj5xu2ys.pdf",
+                        "categoryType": "None",
+                        "stats": "pending",
+                        "comment": "",
+                        "_id": "68983763771b7c844e1896ab",
+                        "uniqueId": "d199a0da-bf2f-410d-b12e-badc6319b657",
+                        "uploadedAt": "2025-08-10T06:08:35.496Z",
+                        "acceptedToBeReviwer": [],
+                        "senderName": []
+                    }
+                ],
+                "__v": 6
+            }
+        ]
+   * }
+}
+*/
 //  * Working perfectly 
 export const userProfile = async (req, res) => {
   try {

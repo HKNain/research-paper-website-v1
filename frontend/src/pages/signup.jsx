@@ -3,14 +3,14 @@ import React, { useState, useEffect } from 'react';
 const initialState = {
   firstName: '',
   lastName: '',
+  role: 'author', // default role
   email: '',
+  password: '',
+  collegeName: '',
   title: '',
   degree: '',
   country: '',
   phoneNumber: '',
-  role: 'author', // default role
-  password: '',
-  collegeName: '',
   department: '',
   securityKey: ''
 };
@@ -62,7 +62,7 @@ const Signup = () => {
           </label>
           <select name="title" onChange={handleChange} required>
             <option value="">Select Title</option>
-            {["Mr.", "Mrs.", "Miss", "Ms.", "Mx.", "Dr.", "Prof.", "Engr.", "Fr.", "Rev."].map(title => (
+            {["Mr.", "Mrs.", "Miss", "Ms.", "Dr.", "Prof.", "Engr."].map(title => (
               <option key={title} value={title}>{title}</option>
             ))}
           </select>

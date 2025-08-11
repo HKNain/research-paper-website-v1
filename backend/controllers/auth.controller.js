@@ -19,18 +19,15 @@ export const signup = async (req, res) => {
       securityKey,
     } = req.body;
 
-    const requiredTitle = [
-      "Mr.",
-      "Mrs.",
-      "Miss",
-      "Ms.",
-      "Mx.",
-      "Dr.",
-      "Prof.",
-      "Engr.",
-      "Fr.",
-      "Rev.",
-    ];
+    const requiredTitle= [
+            "Mr.",
+            "Mrs.",
+            "Miss",
+            "Ms.",      
+            "Dr.",      
+            "Prof.",    
+            "Engr.",     
+        ]
 
     const requiredtitle = [
       "B.Sc", // Bachelor of Science
