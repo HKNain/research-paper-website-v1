@@ -1,0 +1,25 @@
+.wrapper-author-guidelines{
+    max-width: 1300px;
+    margin: 0 auto;
+    padding: 0 var(--space-2xl);
+}
+
+.author-guidelines-scope-section{
+    padding-block: var(--space-lg);
+}
+
+.author-guidelines-scope-heading{
+    text-align: center;
+}
+
+.author-guidelines-heading-line {
+    border: none;
+    border-top: 1px solid #ccc;
+    margin: 1rem 0;
+}
+
+.author-guidelines-fullsection{
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 var(--space-2xl);
+}
