@@ -37,10 +37,10 @@ const userSchema = new mongoose.Schema({
         type: String,
         enum: [
             "admin",
-            "publisher",
+            "author",
             "reviewer"
         ],
-        default: "publisher",
+        default: "author",
     },
 
     password: {
@@ -62,7 +62,6 @@ const userSchema = new mongoose.Schema({
         default : "4378438",
         required: true,
         minlength: 6,
-
     },
      
 
