@@ -1,7 +1,9 @@
 import React from 'react';
+// import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import API from "./api/axios.js";
 
 // Import your page components
 import IndexPage from './pages/index.jsx';
@@ -48,6 +50,18 @@ import './styles/submit.css';
 
 function AppContent() {
   const location = useLocation();
+
+
+
+  //! testing whether the frontend and backend is connected or not
+
+  // useEffect(() => {
+  //   API.get("/api/auth/me")
+  //     .then(res => console.log("✅ Success:", res.data))
+  //     .catch(err => console.error("❌ Error:", err.response?.data || err));
+  // }, []);
+
+
 
     // Pages where footer should NOT show
     const noFooterRoutes = ['/login', '/submit', '/signup'];

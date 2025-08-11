@@ -1,15 +1,17 @@
 import React, { useState, useEffect } from 'react';
+import { toast } from "react-toastify";
+import API from '../api/axios';
 
 const initialState = {
   firstName: '',
   lastName: '',
-  role: 'author', // default role
+  role: 'author',
   email: '',
   password: '',
   collegeName: '',
   title: '',
   degree: '',
-  country: '',
+  Country: '',
   phoneNumber: '',
   department: '',
   securityKey: ''
@@ -19,35 +21,35 @@ const Signup = () => {
   const [formData, setFormData] = useState(initialState);
   const [countries, setCountries] = useState([]);
 
-  // Fetch country list once
   useEffect(() => {
     fetch("https://countriesnow.space/api/v0.1/countries")
       .then((res) => res.json())
       .then((data) => {
-        console.log("Countries API Response:", data); // Debug
         if (data && data.data) {
-          const countryList = data.data.map((c) => c.country).sort();
+          const countryList = data.data.map((c) => c.Country).sort();
           setCountries(countryList);
         }
       })
       .catch((err) => console.error("Error fetching countries:", err));
   }, []);
-  
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log(formData); // replace with API call later
 
-    // Save role in localStorage (testing only)
-    localStorage.setItem("role", formData.role);
-
-    // Redirect to profile
-    window.location.href = "/login";
+    try {
+      const res = await API.post("/auth/signup", formData); // 👈 send data to backend
+      console.log("✅ Signup Success:", res.data);
+      toast.success("Signup successful! Please log in.");
+      window.location.href = "/login"; // redirect after signup
+    } catch (err) {
+      console.error("❌ Signup Error:", err.response?.data || err);
+      toast.error(err.response?.data?.message || "Signup failed");
+    }
   };
 
   return (
@@ -111,9 +113,9 @@ const Signup = () => {
             Country<span className="required">*</span>
           </label>
           <select
-            name="country"
+            name="Country"
             required
-            value={formData.country}
+            value={formData.Country}
             onChange={handleChange}
           >
             <option value="">-- Select Country --</option>
