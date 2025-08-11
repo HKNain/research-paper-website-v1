@@ -132,6 +132,7 @@ export const signup = async (req, res) => {
   }
 };
 
+
 export const login = async (req, res) => {
   try {
     const { email, password, role, securityKey } = req.body;
@@ -152,7 +153,7 @@ export const login = async (req, res) => {
       }
     }
     if (role === "reviewer"){
-      if (securityKey !== process.env.REVIEWER_SECURITY_KEYSECURITY_KEY) {
+      if (securityKey !== process.env.REVIEWER_SECURITY_KEY) {
         return res.status(400).json({ error: "Security Key not matched" });
       }
     }

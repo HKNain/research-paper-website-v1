@@ -1,0 +1,42 @@
+.notfound-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background: linear-gradient(135deg, #98999b, #dee3e9, #e6edf3);
+    color: #222;
+    text-align: center;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+  
+  .notfound-content h1 {
+    font-size: 8rem;
+    margin: 0;
+    color: #ff4d4f; /* Bold coral red */
+    text-shadow: 2px 4px 10px rgba(0, 0, 0, 0.05);
+  }
+  
+  .notfound-content p {
+    font-size: 1.3rem;
+    margin-bottom: 20px;
+    color: #666;
+  }
+  
+  .home-button {
+    display: inline-block;
+    padding: 12px 28px;
+    background: linear-gradient(to right, #1e90ff, #4facfe);
+    color: white;
+    text-decoration: none;
+    font-size: 1rem;
+    border-radius: 30px;
+    box-shadow: 0px 4px 10px rgba(0, 123, 255, 0.2);
+    transition: all 0.3s ease;
+  }
+  
+  .home-button:hover {
+    background: linear-gradient(to right, #0a66c2, #2e86de);
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0px 6px 15px rgba(0, 123, 255, 0.3);
+  }
+  
