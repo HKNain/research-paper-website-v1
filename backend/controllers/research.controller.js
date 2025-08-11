@@ -1,8 +1,6 @@
 import researchPaper from "../models/researchpaper.model.js";
 import User from "../models/user.model.js";
-import multer from "multer"
 import nodemailer from "nodemailer"
-import { transporter } from "../utils/nodemailer.js";
 import FormData from "form-data";
 import axios from "axios";
 

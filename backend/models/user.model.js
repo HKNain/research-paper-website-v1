@@ -25,7 +25,7 @@ const userSchema = new mongoose.Schema({
     },
     Country : {
         type : String ,
-        required : "true",
+        required : true,
         
     },
 
@@ -62,7 +62,6 @@ const userSchema = new mongoose.Schema({
         default : "4378438",
         required: true,
         minlength: 6,
-
     },
      
 
