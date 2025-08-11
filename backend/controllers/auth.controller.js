@@ -4,7 +4,7 @@ import generateTokenAndSetCookie from "../utils/generateToken.js";
 
 export const signup = async (req, res) => {
   try {
-    const { 
+    const {
       firstName,
       lastName,
       role,
@@ -16,83 +16,84 @@ export const signup = async (req, res) => {
       Country,
       phoneNumber,
       department,
-      securityKey
+      securityKey,
     } = req.body;
 
-    const requiredTitle= [
-            "Mr.",
-            "Mrs.",
-            "Miss",
-            "Ms.",
-            "Mx.",      
-            "Dr.",      
-            "Prof.",    
-            "Engr.",    
-            "Fr.",      
-            "Rev."      
-        ]
+    const requiredTitle = [
+      "Mr.",
+      "Mrs.",
+      "Miss",
+      "Ms.",
+      "Mx.",
+      "Dr.",
+      "Prof.",
+      "Engr.",
+      "Fr.",
+      "Rev.",
+    ];
 
-        const requiredtitle = [
-            "B.Sc",        // Bachelor of Science
-            "B.A",         // Bachelor of Arts
-            "B.E",         // Bachelor of Engineering
-            "B.Tech",      // Bachelor of Technology
-            "M.Sc",        // Master of Science
-            "M.A",         // Master of Arts
-            "M.E",         // Master of Engineering
-            "M.Tech",      // Master of Technology
-            "M.Phil",      // Master of Philosophy
-            "Ph.D",        // Doctor of Philosophy
-            "D.Sc",        // Doctor of Science
-            "LL.B",        // Bachelor of Law
-            "LL.M",        // Master of Law
-            "MBA",         // Master of Business Administration
-            "BBA",         // Bachelor of Business Administration
-            "B.Ed",        // Bachelor of Education
-            "M.Ed",        // Master of Education
-            "MBBS",        // Bachelor of Medicine
-            "MD",          // Doctor of Medicine
-            "BDS",         // Dental Surgery
-            "DVM",         // Doctor of Veterinary Medicine
-            "CA",          // Chartered Accountant
-            "CS",          // Company Secretary
-            "CFA",         // Chartered Financial Analyst
-            "Diploma",     // For diploma holders
-            "Other"        // Fallback option
-        ]
+    const requiredtitle = [
+      "B.Sc", // Bachelor of Science
+      "B.A", // Bachelor of Arts
+      "B.E", // Bachelor of Engineering
+      "B.Tech", // Bachelor of Technology
+      "M.Sc", // Master of Science
+      "M.A", // Master of Arts
+      "M.E", // Master of Engineering
+      "M.Tech", // Master of Technology
+      "M.Phil", // Master of Philosophy
+      "Ph.D", // Doctor of Philosophy
+      "D.Sc", // Doctor of Science
+      "LL.B", // Bachelor of Law
+      "LL.M", // Master of Law
+      "MBA", // Master of Business Administration
+      "BBA", // Bachelor of Business Administration
+      "B.Ed", // Bachelor of Education
+      "M.Ed", // Master of Education
+      "MBBS", // Bachelor of Medicine
+      "MD", // Doctor of Medicine
+      "BDS", // Dental Surgery
+      "DVM", // Doctor of Veterinary Medicine
+      "CA", // Chartered Accountant
+      "CS", // Company Secretary
+      "CFA", // Chartered Financial Analyst
+      "Diploma", // For diploma holders
+      "Other", // Fallback option
+    ];
     // User details coming from form ...
     if (
-  !firstName ||
-  !email ||
-  !password || password.length < 6 ||
-  !requiredtitle.includes(title) ||
-  !Country ||
-  !collegeName
-) {
-  console.log(firstName, email, password, title, Country, collegeName);
-  return res.status(400).json({ error: "Please enter input values correctly" });
-}
+      !firstName ||
+      !email ||
+      !password ||
+      password.length < 6 ||
+      !requiredTitle.includes(title) || // <-- use requiredTitle for title
+      !Country ||
+      !collegeName
+    ) {
+      console.log(firstName, email, password, title, Country, collegeName);
+      return res
+        .status(400)
+        .json({ error: "Please enter input values correctly" });
+    }
 
     const user = await User.findOne({ email });
 
-
     if (user) {
-      // Check for user 
+      // Check for user
       return res.status(400).json({ error: "email already exists" });
     }
 
     if (role === "admin") {
-      // check for Admin 
+      // check for Admin
       if (securityKey !== process.env.ADMIN_SECURITY_KEY) {
         return res.status(400).json({ error: "Security Key not matched" });
       }
     }
-    if ( role ==="reviewer" ){
+    if (role === "reviewer") {
       if (securityKey !== process.env.REVIEWER_SECURITY_KEY) {
         return res.status(400).json({ error: "Security Key not matched" });
-      } 
+      }
     }
-    
 
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
@@ -132,18 +133,17 @@ export const signup = async (req, res) => {
   }
 };
 
-
 export const login = async (req, res) => {
   try {
     const { email, password, role, securityKey } = req.body;
     const user = await User.findOne({ email });
-    
+
     const isPasswordCorrect = await bcrypt.compare(
       password,
       user?.password || ""
     );
 
-    if (!user || !isPasswordCorrect ) {
+    if (!user || !isPasswordCorrect) {
       return res.status(400).json({ error: "Invalid Credentials" });
     }
 
@@ -152,20 +152,22 @@ export const login = async (req, res) => {
         return res.status(400).json({ error: "Security Key not matched" });
       }
     }
-    if (role === "reviewer"){
+    if (role === "reviewer") {
       if (securityKey !== process.env.REVIEWER_SECURITY_KEY) {
         return res.status(400).json({ error: "Security Key not matched" });
       }
     }
-    if (user.role!==role){
-        return res.status(400).json({ error: `You are not authorised as for this ${role}` });
+    if (user.role !== role) {
+      return res
+        .status(400)
+        .json({ error: `You are not authorised as for this ${role}` });
     }
 
     generateTokenAndSetCookie(user._id, res);
 
     res.status(200).json({
       _id: user._id,
-      email: user.email
+      email: user.email,
     });
   } catch (error) {
     console.log("Error in Login Controller", error.message);

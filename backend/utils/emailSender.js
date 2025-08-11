@@ -1,23 +1,31 @@
-import { transporter } from "./nodemailer.js";
+import nodemailer from "nodemailer"
+
+const transporter = nodemailer.createTransport({
+  host: "sandbox.smtp.mailtrap.io",
+  port: 2525,
+  auth: {
+    user: "2297618692e384",
+    pass: "3417c9197af070"
+  }
+});
 
 export const mailSender = async (req, res) => {
   try {
-    const mailOption = {
-      from: `"Dr. Tayyab Khan" <${process.env.EMAIL_USER}>`,
+    const info = await transporter.sendMail({
+      from: '"Tayyab" <researchhelptry@gmail.com>',
       to: req.body.to,
-      subject: "Dr. Tayyab Khan is inviting you to review an application",
-      text: "You are invited to review an application.",
-      html: `<b>Hello,</b><br>
-             You are invited to review an application.<br>
-             <a href="https://your-website.com/review?appId=${req.body.appId}">Click here to review</a>`,
-    };
-
-    const info = await transporter.sendMail(mailOption);
+      subject: "Review",
+      text: "Hello world?", // plain‑text body
+      html: "<b>Hello world?</b>", // HTML body
+    });
 
     console.log("Message sent:", info.messageId);
-    res.status(200).json({ message: "Email sent", messageId: info.messageId });
   } catch (error) {
-    console.log("Error in sending mail through node mailer");
-    res.status(502).json({ message: "Email wasn't sent" });
+    console.log(error.message);
+    console.log("error in mail sender")
+    res.status(500).json({error: "Error in sending mail"})
   }
+  
+
+  
 };
