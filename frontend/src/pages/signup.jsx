@@ -26,7 +26,7 @@ const Signup = () => {
       .then((res) => res.json())
       .then((data) => {
         if (data && data.data) {
-          const countryList = data.data.map((c) => c.Country).sort();
+          const countryList = data.data.map((c) => c.country).sort();
           setCountries(countryList);
         }
       })

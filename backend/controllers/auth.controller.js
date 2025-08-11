@@ -16,7 +16,7 @@ export const signup = async (req, res) => {
       Country,
       phoneNumber,
       department,
-      securityKey,
+      // securityKey,
     } = req.body;
 
     const requiredTitle= [
@@ -72,6 +72,7 @@ export const signup = async (req, res) => {
         .status(400)
         .json({ error: "Please enter input values correctly" });
     }
+    // console.log(firstName , email , password , title , Country , collegeName, role , securityKey)
 
     const user = await User.findOne({ email });
 
@@ -79,22 +80,25 @@ export const signup = async (req, res) => {
       // Check for user
       return res.status(400).json({ error: "email already exists" });
     }
+    if ( role === "author"){
+      req.body.securityKey= "42315678";
+    }
 
     if (role === "admin") {
       // check for Admin
-      if (securityKey !== process.env.ADMIN_SECURITY_KEY) {
+      if (req.body.securityKey !== process.env.ADMIN_SECURITY_KEY) {
         return res.status(400).json({ error: "Security Key not matched" });
       }
     }
     if (role === "reviewer") {
-      if (securityKey !== process.env.REVIEWER_SECURITY_KEY) {
+      if (req.body.securityKey !== process.env.REVIEWER_SECURITY_KEY) {
         return res.status(400).json({ error: "Security Key not matched" });
       }
     }
 
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
-
+    // console.log ("security", securityKey)
     const newUser = new User({
       firstName,
       lastName,
@@ -102,13 +106,14 @@ export const signup = async (req, res) => {
       password: hashedPassword,
       role,
       collegeName,
-      securityKey,
+      securityKey: req.body.securityKey,
       title,
       degree,
       Country,
       phoneNumber,
       department,
     });
+    console.log(newUser)
 
     if (newUser) {
       generateTokenAndSetCookie(newUser._id, res);
