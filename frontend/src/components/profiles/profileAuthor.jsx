@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import API from '../../api/axios.js'
 
 const initialState = {
   firstName: '',
@@ -39,12 +40,23 @@ const Profile = () => {
   const [showdata , setshowdata] = useState(false);
   const [selectedrow , setselectedrow] = useState(null);
 
-  // Load role from localStorage for testing
+  // fetching user data from an API
   useEffect(() => {
-    const savedRole = localStorage.getItem("role");
-    if (savedRole) {
-      setFormData(prev => ({ ...prev, role: savedRole }));
-    }
+    const fetchProfile = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await API.get("/auth/me", {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setFormData(prev => ({
+          ...prev,
+          ...res.data
+        }));        
+      } catch (error) {
+        console.error("❌ Error fetching profile:", error);
+      }
+    };
+    fetchProfile();
   }, []);
 
   const handleChange = (e) => {
@@ -79,8 +91,8 @@ const Profile = () => {
             disabled
             type="text"
             name="role"
-            value={formData.role}
             onChange={handleChange}
+            value={formData.role}
           />
         </div>
 
@@ -89,13 +101,27 @@ const Profile = () => {
           <label>
             First Name<span className="required">*</span>
           </label>
-          <input type="text" name="firstName" disabled minLength="6" required onChange={handleChange} />
+          <input 
+          disabled 
+          type="text" 
+          name="firstName" 
+          minLength="6" 
+          required 
+          onChange={handleChange} 
+          value={formData.firstName}
+          />
         </div>
 
         {/* Last Name */}
         <div className="form-group">
           <label>Last Name</label>
-          <input disabled  type="text" name="lastName" onChange={handleChange}  />
+          <input 
+          disabled  
+          type="text" 
+          name="lastName" 
+          onChange={handleChange}  
+          value={formData.lastName}
+          />
         </div>
 
         {/* Email */}
@@ -103,13 +129,26 @@ const Profile = () => {
           <label>
             Email<span className="required">*</span>
           </label>
-          <input disabled  type="email" name="email" required onChange={handleChange} />
+          <input 
+          disabled  
+          type="email" 
+          name="email" 
+          required 
+          onChange={handleChange} 
+          value={formData.email}
+          />
         </div>
 
         {/* Degree */}
         <div className="form-group">
           <label>Degree</label>
-          <input disabled type="text" name="degree" onChange={handleChange} />
+          <input 
+          disabled 
+          type="text" 
+          name="degree" 
+          onChange={handleChange} 
+          value={formData.degree}
+          />
         </div>
 
         {/* Country */}
@@ -117,13 +156,26 @@ const Profile = () => {
           <label>
             Country<span className="required">*</span>
           </label>
-          <input disabled  type="text" name="country" required onChange={handleChange}  />
+          <input 
+          disabled  
+          type="text" 
+          name="country" 
+          required 
+          onChange={handleChange}  
+          value={formData.country}
+          />
         </div>
 
         {/* Phone Number */}
         <div className="form-group">
           <label>Phone Number</label>
-          <input disabled type="text" name="phoneNumber" onChange={handleChange} />
+          <input 
+          disabled 
+          type="text" 
+          name="phoneNumber" 
+          onChange={handleChange} 
+          value={formData.phoneNumber}
+          />
         </div>
 
         {/* College Name */}
@@ -131,13 +183,26 @@ const Profile = () => {
           <label>
             College Name<span className="required">*</span>
           </label>
-          <input disabled type="text" name="collegeName" required onChange={handleChange} />
+          <input 
+          disabled 
+          type="text" 
+          name="collegeName" 
+          required 
+          onChange={handleChange} 
+          value={formData.collegeName}
+          />
         </div>
 
         {/* Department */}
         <div className="form-group">
           <label>Department</label>
-          <input disabled type="text" name="department" onChange={handleChange}  />
+          <input 
+          disabled 
+          type="text" 
+          name="department" 
+          onChange={handleChange}  
+          value={formData.department}
+          />
         </div>
 
         <div className="form-submit">

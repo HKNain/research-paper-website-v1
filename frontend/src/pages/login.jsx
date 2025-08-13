@@ -26,12 +26,14 @@ export default function Login() {
       if (res.data.token) {
         localStorage.setItem("token", res.data.token);
       }
-
+      if (res.data.user?.role) {
+        localStorage.setItem("role", res.data.user.role);
+      }
       console.log("✅ Logged in:", res.data);
-      navigate("/"); // go to home/dashboard
+      navigate("/profile"); // go to home/dashboard
     } catch (err) {
       console.error("❌ Login error:", err.response?.data || err.message);
-      setError(err.response?.data?.message || "Login failed");
+      setError(err.response?.data?.error || "Login failed");
     }
   };
 

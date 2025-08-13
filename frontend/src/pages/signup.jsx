@@ -11,7 +11,7 @@ const initialState = {
   collegeName: '',
   title: '',
   degree: '',
-  Country: '',
+  country: '',
   phoneNumber: '',
   department: '',
   securityKey: ''
@@ -113,9 +113,9 @@ const Signup = () => {
             Country<span className="required">*</span>
           </label>
           <select
-            name="Country"
+            name="country"
             required
-            value={formData.Country}
+            value={formData.country}
             onChange={handleChange}
           >
             <option value="">-- Select Country --</option>

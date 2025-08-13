@@ -13,7 +13,7 @@ export const signup = async (req, res) => {
       collegeName,
       title,
       degree,
-      Country,
+      country,
       phoneNumber,
       department,
       // securityKey,
@@ -64,15 +64,15 @@ export const signup = async (req, res) => {
       !password ||
       password.length < 6 ||
       !requiredTitle.includes(title) || // <-- use requiredTitle for title
-      !Country ||
+      !country ||
       !collegeName
     ) {
-      console.log(firstName, email, password, title, Country, collegeName);
+      console.log(firstName, email, password, title, country, collegeName);
       return res
         .status(400)
         .json({ error: "Please enter input values correctly" });
     }
-    // console.log(firstName , email , password , title , Country , collegeName, role , securityKey)
+    // console.log(firstName , email , password , title , country , collegeName, role , securityKey)
 
     const user = await User.findOne({ email });
 
@@ -109,7 +109,7 @@ export const signup = async (req, res) => {
       securityKey: req.body.securityKey,
       title,
       degree,
-      Country,
+      country,
       phoneNumber,
       department,
     });
@@ -138,44 +138,53 @@ export const signup = async (req, res) => {
 export const login = async (req, res) => {
   try {
     const { email, password, role, securityKey } = req.body;
+
+    // step 1: check if the user exists
     const user = await User.findOne({ email });
-
-    const isPasswordCorrect = await bcrypt.compare(
-      password,
-      user?.password || ""
-    );
-
-    if (!user || !isPasswordCorrect) {
-      return res.status(400).json({ error: "Invalid Credentials" });
+    if (!user) {
+      return res.status(400).json({ error: "User does not exist" });
     }
 
-    if (role === "admin") {
-      if (securityKey !== process.env.ADMIN_SECURITY_KEY) {
-        return res.status(400).json({ error: "Security Key not matched" });
-      }
+    // step 2: check password
+    const isPasswordCorrect = await bcrypt.compare(password, user?.password || "");
+    if (!isPasswordCorrect) {
+      return res.status(400).json({ error: "Invalid password" });
     }
-    if (role === "reviewer") {
-      if (securityKey !== process.env.REVIEWER_SECURITY_KEY) {
-        return res.status(400).json({ error: "Security Key not matched" });
-      }
+
+    // step 3: check role authorization
+    if ((role === "admin" && securityKey !== process.env.ADMIN_SECURITY_KEY) ||
+        (role === "reviewer" && securityKey !== process.env.REVIEWER_SECURITY_KEY)) {
+      return res.status(400).json({ error: "Security Key not matched" });
     }
+
+    // step 4: check if user's role matches
     if (user.role !== role) {
-      return res
-        .status(400)
-        .json({ error: `You are not authorised as for this ${role}` });
+      return res.status(400).json({ error: `You are not authorised as ${role}` });
     }
 
-    generateTokenAndSetCookie(user._id, res);
+    // step 5: generate token and set cookie
+    const token = generateTokenAndSetCookie(user._id, res);
 
+    // send user info + token to frontend
     res.status(200).json({
       _id: user._id,
       email: user.email,
+      token,
+      user: {
+        role: user.role,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        collegeName: user.collegeName,
+        country: user.country,
+      },
     });
+
   } catch (error) {
     console.log("Error in Login Controller", error.message);
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
+
 
 export const logout = async (req, res) => {
   try {
@@ -184,5 +193,18 @@ export const logout = async (req, res) => {
   } catch (error) {
     console.log("Error in Logout Controller", error.message);
     res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+export const getMe = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select("-password"); 
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.status(200).json(user);
+  } catch (error) {
+    console.error("Error in getMe:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };
