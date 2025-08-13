@@ -78,13 +78,28 @@ const Header = () => {
             </div>
 
             <div className="auth-buttons">
-              <Link to="/signup">
-                <button className="btn btn-signin">Sign Up</button>
-              </Link>
+              {localStorage.getItem("token") ? (
+                <button
+                  className="btn btn-signin"
+                  onClick={() => {
+                    localStorage.removeItem("token");
+                    toast.success("Signed out successfully", { style: { minWidth: "300px" } });
+                    navigate("/"); // redirect after logout
+                  }}
+                >
+                  Sign Out
+                </button>
+              ) : (
+                <Link to="/login">
+                  <button className="btn btn-signin">Sign Up / LOGIN</button>
+                </Link>
+              )}
+
               <Link to="/submit">
                 <button className="btn btn-submit">Submit Paper</button>
               </Link>
             </div>
+
 
             <div className="profile-icon" onClick={handleClick}>
                   <svg

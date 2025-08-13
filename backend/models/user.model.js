@@ -14,6 +14,7 @@ const userSchema = new mongoose.Schema({
     email: {
         type: String,
         required: true,
+        unique: true,
     },
     title: { 
         type: String,
@@ -23,7 +24,7 @@ const userSchema = new mongoose.Schema({
     degree: {
         type: String,
     },
-    Country : {
+    country : {
         type : String ,
         required : true,
         
