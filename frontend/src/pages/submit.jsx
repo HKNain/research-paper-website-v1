@@ -1,41 +1,68 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from "react-toastify";
+import API from '../api/axios';
 
-
-const SubmitPaper = () => {
+const SubmitPaper = ({addPaper}) => {
   const [pdfFile, setPdfFile] = useState(null);
   const [category, setCategory] = useState('');
   const [suggestions, setSuggestions] = useState([]);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleFileChange = (e) => {
     setPdfFile(e.target.files[0]);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const token = localStorage.getItem("token");  // change key as per your app
-
+    const token = localStorage.getItem("token");
     if (!token) {
       toast.error("You must be logged in to submit a paper.");
       navigate("/login");
       return;
     }
-    else
-    {
-      navigate("/profile");
+
+    if (!pdfFile) {
+      toast.error("Please upload a PDF.");
+      return;
     }
 
     const formData = new FormData();
-    formData.append("pdf", pdfFile);
+    formData.append("file", pdfFile); // must match multer field
     formData.append("category", category);
 
-    // TODO: Send formData to backend using fetch/axios
-    console.log("Submitted", { pdfFile, category });
-
-    navigate("/profile");
+    try {
+      setLoading(true);
+      const res = await API.post("/research/submit", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${token}`
+        }
+      });
+    
+      toast.success("Paper submitted successfully!");
+    
+      // Push the new paper to table
+      if (res.data.researchPaperUploads && res.data.researchPaperUploads.length > 0) {
+        const newUpload = res.data.researchPaperUploads[0];
+    
+        addPaper({
+          ...newUpload,
+          uploadedAt: new Date(newUpload.uploadedAt), // make it a Date object
+        });
+      }
+    
+      // Don't navigate away! Let the user see the table update instantly
+      setPdfFile(null);
+      setCategory("");
+    } catch (error) {
+      console.error("Error submitting paper:", error);
+      toast.error("Failed to submit paper. Try again.");
+    } finally {
+      setLoading(false);
+    }    
   };
 
   const fetchSuggestions = async (text) => {
@@ -49,7 +76,7 @@ const SubmitPaper = () => {
     const data = await res.json();
     setSuggestions(data.results || []);
   };
-
+  
   return (
     <div className='static'>
       <div className="submit-container">
@@ -57,7 +84,7 @@ const SubmitPaper = () => {
         <form onSubmit={handleSubmit} className="submit-form">
           <div className="form-group">
             <label>Upload PDF:</label>
-            <input type="file" accept="application/pdf" onChange={handleFileChange} required />
+            <input type="file" accept="application/pdf" onChange={handleFileChange} required disabled={loading}/>
           </div>
 
           <div className="form-group" style={{ position: "relative" }}>
@@ -99,9 +126,10 @@ const SubmitPaper = () => {
             )}
           </div>
 
-          <button type="submit" className="submit-btn">
-            Submit
+          <button type="submit" className="submit-btn" disabled={loading}>
+            {loading ? "Submitting..." : "Submit"}
           </button>
+
         </form>
 
         {/* Minimal inline styling or extract to CSS */}

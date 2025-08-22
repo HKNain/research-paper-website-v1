@@ -171,7 +171,7 @@ const Signup = () => {
         </div>
 
         {/* Security Key (Required only for Admin) */}
-        {formData.role === "admin" && (
+        {(formData.role === "admin"  || formData.role === "reviewer") && (
           <div className="form-group">
             <label>
               Security Key<span className="required">*</span>

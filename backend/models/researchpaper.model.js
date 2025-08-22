@@ -32,13 +32,13 @@ const researchSchema = new mongoose.Schema({
         type: Date,
         default: Date.now,
       },
-      acceptedToBeReviwer: [
+      acceptedToBeReviewer: [
         {
           reviewerEmail: {
             type: String,
             default: "",
           },
-          reviwerApproval: {
+          reviewerApproval: {
           type: Boolean,
           default: false
         }
