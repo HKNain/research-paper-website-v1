@@ -316,7 +316,7 @@ export const getAllUserWithResearchPapersPosted = async (req, res) => {
             "uniqueId": "eaede8fc-f8c7-45a3-9939-898ef4b251a2",
             "uploadedAt": "2025-08-10T05:43:44.800Z",
             "acceptedToBeReviewer": [],
-            "senderName": []
+            "senderName": []n
         }
     ],
     "reviewrs": [
@@ -788,17 +788,17 @@ export const getReviewerTasks = async (req, res) => {
   try {
     const reviewerEmail = req.user.email;
 
-    // Find papers where this reviewer has accepted to review
     const papers = await researchPaper
       .find({
-        "researchPaperUploads.acceptedToBeReviewer.reviewerEmail": reviewerEmail
+        "researchPaperUploads.senderName.reviewerEmail": reviewerEmail
       })
       .populate("author", "firstName lastName email");
+
 
     const tasks = papers
       .map(paper => {
         const relevantUploads = paper.researchPaperUploads.filter(upload =>
-          upload.acceptedToBeReviewer.some(reviewer => 
+          upload.senderName.some(reviewer => 
             reviewer.reviewerEmail === reviewerEmail
           )
         );
@@ -817,6 +817,7 @@ export const getReviewerTasks = async (req, res) => {
         }));
       })
       .flat();
+      console.log ( tasks )
 
     return res.status(200).json({
       success: "Reviewer tasks fetched successfully",
@@ -829,7 +830,7 @@ export const getReviewerTasks = async (req, res) => {
   }
 };
 
-// Also add endpoint for reviewer to submit their review
+
 export const submitReviewerReview = async (req, res) => {
   try {
     const { uploadId } = req.params;
