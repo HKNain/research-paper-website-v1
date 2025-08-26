@@ -608,6 +608,7 @@ export const AcceptedReviewer = async (req, res) => {
   try {
     const reviewerEmail = req.user.email;
     const { id: uniqueId } = req.params;
+    const {reviewerApproval} = req.body
 
     
     const paper = await researchPaper.findOne({
@@ -632,16 +633,18 @@ export const AcceptedReviewer = async (req, res) => {
 
     upload.acceptedToBeReviewer.push({
       reviewerEmail,
+      reviewerApproval
     });
 
-    upload.senderName = upload.senderName.filter(
-      sender => sender.reviewerEmail !== reviewerEmail
-    );
+    // upload.senderName = upload.senderName.filter(
+    //   sender => sender.reviewerEmail !== reviewerEmail
+    // );
 
     await paper.save();
 
     return res.status(200).json({
-      message: "Accepted to be a reviewer!"
+      message: `${reviewerApproval} `,
+      success: "Response Submitted"
     });
 
   } catch (error) {
@@ -794,30 +797,38 @@ export const getReviewerTasks = async (req, res) => {
       })
       .populate("author", "firstName lastName email");
 
-
     const tasks = papers
       .map(paper => {
         const relevantUploads = paper.researchPaperUploads.filter(upload =>
-          upload.senderName.some(reviewer => 
+          upload.senderName.some(reviewer =>
             reviewer.reviewerEmail === reviewerEmail
           )
         );
 
-        return relevantUploads.map(upload => ({
-          _id: upload._id,
-          uniqueId: upload.uniqueId,
-          categoryType: upload.categoryType,
-          stats: upload.stats,
-          comment: upload.comment,
-          uploadedAt: upload.uploadedAt,
-          researchPaperPdfUrl: upload.researchPaperPdfUrl,
-          authorName: `${paper.author.firstName} ${paper.author.lastName}`,
-          authorEmail: paper.author.email,
-          paperId: paper._id
-        }));
+        return relevantUploads.map(upload => {
+          // Find the reviewer entry in acceptedToBeReviewer
+          const reviewerData = upload.acceptedToBeReviewer.find(
+            r => r.reviewerEmail === reviewerEmail
+          );
+
+          return {
+            _id: upload._id,
+            uniqueId: upload.uniqueId,
+            categoryType: upload.categoryType,
+            stats: upload.stats,
+            comment: upload.comment,
+            uploadedAt: upload.uploadedAt,
+            researchPaperPdfUrl: upload.researchPaperPdfUrl,
+            authorName: `${paper.author.firstName} ${paper.author.lastName}`,
+            authorEmail: paper.author.email,
+            paperId: paper._id,
+            reviewerApproval: reviewerData ? reviewerData.reviewerApproval : "no response"
+          };
+        });
       })
       .flat();
-      console.log ( tasks )
+
+    console.log(tasks);
 
     return res.status(200).json({
       success: "Reviewer tasks fetched successfully",
