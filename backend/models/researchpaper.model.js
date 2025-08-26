@@ -42,8 +42,18 @@ const researchSchema = new mongoose.Schema({
             type: String,
             default : 'no response',
             enum: ['accepted','rejected','no response']
+        } ,
+        reviewercomment : {
+          type : String ,
+          default : " ",
+        }, 
+        reviewerPaperResult : {
+          type : String ,
+          default : 'pending',
+          enum : ["accepted", 'rejected','pending']
         }
-        }
+
+       }
       ],
       senderName: [
         {
