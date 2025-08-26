@@ -822,7 +822,8 @@ export const getReviewerTasks = async (req, res) => {
             authorName: `${paper.author.firstName} ${paper.author.lastName}`,
             authorEmail: paper.author.email,
             paperId: paper._id,
-            reviewerApproval: reviewerData ? reviewerData.reviewerApproval : "no response"
+            reviewerApproval: reviewerData ? reviewerData.reviewerApproval : "no response",
+            reviewerPaperResult : reviewerData?reviewerData.reviewerPaperResult : "pending",
           };
         });
       })
@@ -862,7 +863,7 @@ export const submitReviewerReview = async (req, res) => {
     }
 
     // Check if this reviewer is authorized to review this paper
-    const isAuthorizedReviewer = upload.acceptedToBeReviewer.some(
+    const isAuthorizedReviewer = upload.acceptedToBeReviewer.find(
       reviewer => reviewer.reviewerEmail === reviewerEmail
     );
 
@@ -871,8 +872,8 @@ export const submitReviewerReview = async (req, res) => {
     }
 
     // Update the paper with reviewer's feedback
-    upload.comment = comment;
-    upload.stats = status;
+    isAuthorizedReviewer.reviewercomment = comment;
+    isAuthorizedReviewer.reviewerPaperResult = status.toLowerCase();
 
     await paper.save();
 
