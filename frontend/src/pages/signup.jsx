@@ -75,7 +75,7 @@ const Signup = () => {
           <label>
             First Name<span className="required">*</span>
           </label>
-          <input type="text" name="firstName" minLength="6" required onChange={handleChange} />
+          <input type="text" name="firstName" required onChange={handleChange} />
         </div>
 
         {/* Last Name */}
