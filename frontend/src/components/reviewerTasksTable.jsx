@@ -1,5 +1,5 @@
 // src/components/reviewerTasksTable.jsx
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import API from "../api/axios.js";
 
 const ReviewerTasksTable = () => {
@@ -7,18 +7,43 @@ const ReviewerTasksTable = () => {
   const [selectedTask, setSelectedTask] = useState(null);
   const [comment, setComment] = useState("");
   const [status, setStatus] = useState("");
+  const [isAcceptedReviewer,setAcceptedReviwer] = useState ("");
 
   useEffect(() => {
     const fetchTasks = async () => {
       try {
         const res = await API.get("/research/reviewer/tasks"); 
         setTasks(res.data.tasks || []);
+        
       } catch (err) {
         console.error("Error fetching reviewer tasks:", err);
+        return 
       }
     };
     fetchTasks();
   }, []);
+
+ 
+ 
+
+  
+  //  * PatchToBeReviwer
+
+  const handleReviewerResponseToBeReviewer = async (paperId, reviewerApproval) => {
+  try {
+    const res = await API.patch(
+      `/research/reviewerAccepted/${paperId}`,
+      { reviewerApproval }  
+    );
+    console.log (res)
+    setAcceptedReviwer(res.data.message);
+  } catch (error) {
+    
+    console.log("Error in handleReviewerResponseToBeReviewer:", error);
+  }
+};
+
+  
 
   const openModal = (task) => {
     setSelectedTask(task);
@@ -119,8 +144,20 @@ const ReviewerTasksTable = () => {
             >
               <button>View PDF</button>
             </a>
+{
+  (selectedTask.reviewerApproval === 'rejected' || selectedTask.reviewerApproval === 'no response') && (
+    <div className="flex">
+      <button onClick={() => handleReviewerResponseToBeReviewer(selectedTask.uniqueId, "accepted")}>Accept</button>
+      <button onClick={() => handleReviewerResponseToBeReviewer(selectedTask.uniqueId, "rejected")}>Reject</button>
+    </div>
+  )
 
-            {/* Review Form */}
+}            {/* Review Form */}
+            {/* starts  */}
+        {         
+          (selectedTask.reviewerApproval === 'accepted') && (<>
+  
+  
             <div style={{ marginTop: "20px" }}>
               <label style={{ fontWeight: "bold" }}>Comment:</label>
               <textarea
@@ -153,6 +190,10 @@ const ReviewerTasksTable = () => {
             <div style={{ marginTop: "20px", textAlign: "right" }}>
               <button onClick={handleReviewSubmit}>Submit Review</button>
             </div>
+        
+          </>)
+       }
+            {/* end  */}
           </div>
         </div>
       )}

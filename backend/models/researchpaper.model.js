@@ -39,8 +39,9 @@ const researchSchema = new mongoose.Schema({
             default: "",
           },
           reviewerApproval: {
-          type: Boolean,
-          default: false
+            type: String,
+            default : 'no response',
+            enum: ['accepted','rejected','no response']
         }
         }
       ],
