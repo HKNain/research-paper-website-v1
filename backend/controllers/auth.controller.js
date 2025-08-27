@@ -19,6 +19,7 @@ export const signup = async (req, res) => {
       department,
       // securityKey,
     } = req.body;
+    console.log(req.body)
 
     const requiredTitle= [
             "Mr.",
@@ -121,14 +122,24 @@ export const signup = async (req, res) => {
 
       await newUser.save();
 
-      const mailOptions = {
-        from: process.env.SENDER_EMAIL,
-        to: email , 
-        subject: 'SignUp Successful',
-        text: "Congratulations for signing in!\nYour account has been created.\nWelcome aboard!"
+      try {
+        console.log("trying sendin mail")
+        const mailOptions = {
+          from: process.env.SENDER_EMAIL,
+          to: email , 
+          subject: 'SignUp Successful',
+          text: "Congratulations for signing in!"
+        }
+        console.log(mailOptions);
+        console.log("Sendin mail")
+
+        await transporter.sendMail(mailOptions);
+        console.log("mail sent")
+      } catch (error) {
+        console.log(error);
       }
 
-      await transporter.sendMail(mailOptions);
+      
 
       res.status(201).json({
         _id: newUser._id,
