@@ -1,6 +1,7 @@
 import User from "../models/user.model.js";
 import bcrypt from "bcryptjs";
 import generateTokenAndSetCookie from "../utils/generateToken.js";
+import transporter from "../utils/nodemailer.js";
 
 export const signup = async (req, res) => {
   try {
@@ -120,6 +121,15 @@ export const signup = async (req, res) => {
 
       await newUser.save();
 
+      const mailOptions = {
+        from: process.env.SENDER_EMAIL,
+        to: email , 
+        subject: 'SignUp Successful',
+        text: "Congratulations for signing in!\nYour account has been created.\nWelcome aboard!"
+      }
+
+      await transporter.sendMail(mailOptions);
+
       res.status(201).json({
         _id: newUser._id,
         firstName: newUser.firstName,
@@ -164,6 +174,15 @@ export const login = async (req, res) => {
 
     // step 5: generate token and set cookie
     const token = generateTokenAndSetCookie(user._id, res);
+
+    const mailOptions = {
+      from: process.env.SENDER_EMAIL,
+      to: email , 
+      subject: 'LogIn Successful',
+      text: "Congratulations for logging in!\nYour account has been Logged In.\n Start uploading research"
+    }
+
+    await transporter.sendMail(mailOptions);
 
     // send user info + token to frontend
     res.status(200).json({
