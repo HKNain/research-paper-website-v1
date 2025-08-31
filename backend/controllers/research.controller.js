@@ -7,86 +7,17 @@ import axios from "axios";
 /*
 
 ! This is How Schema Willl Lokk like for research paper 
-*{
-  "_id": {
-    "$oid": "689831903e0d83a4c784635e"
-  },
-  ?"author": {
-    "$oid": "68982c45f433bf668dee2e3c"
-  },
-  ?"researchPaperUploads": [
-    {
-    ?  "researchPaperPdfUrl": "https://ik.imagekit.io/kwy9fhvlz/Resume_aOPHiVAC8.pdf",
-    ?  "categoryType": "None",
-     ? "stats": "accepted",
-      "comment": "Hello sir Your paper is approved to be published ",
-      "_id": {
-        "$oid": "689831903e0d83a4c784635f"
-      },
-     ? "uniqueId": "eaede8fc-f8c7-45a3-9939-898ef4b251a2",
-      "uploadedAt": { 
-        "$date": "2025-08-10T05:43:44.800Z"
-      },
-     ? "acceptedToBeReviewer": [
-        {
-          "reviewerEmail": "xyz@gmail.com",
-          "reviewerApproval": true,
-          "_id": {
-            "$oid": "6898e2b095cd58d6633e8b54"
-          }
-        }
-      ],
-     ? "senderName": [
-        {
-          "reviewerEmail": "",
-          "_id": {
-            "$oid": "6898a16162f449de938080a3"
-          }
-        },
-        {
-          "reviewerEmail": "",
-          "_id": {
-            "$oid": "6898c15b6c05bccfb00c50ee"
-          }
-        },
-        {
-          "reviewerEmail": "",
-          "_id": {
-            "$oid": "6898c1ff979296c675f9d2a8"
-          }
-        }
-      ]
-    },
-    {
-      "researchPaperPdfUrl": "https://ik.imagekit.io/kwy9fhvlz/AI_Navigation_Assistant_Roadmap_WKj5xu2ys.pdf",
-      "categoryType": "None",
-      "stats": "pending",
-      "comment": "",
-      "_id": {
-        "$oid": "68983763771b7c844e1896ab"
-      },
-      "uniqueId": "d199a0da-bf2f-410d-b12e-badc6319b657",
-      "uploadedAt": {
-        "$date": "2025-08-10T06:08:35.496Z"
-      },
-      "acceptedToBeReviewer": [],
-      "senderName": []
-    }
-  ],
-  "__v": 6
-*}
+
 
 */
  
 
 
 
-// Todo Right  Api  is to be removed  
-// Todo isme na Nodemailer se user ke pass mail bhejni h usme pdf Usrl link is to be include in it 
 
 const IMAGEKIT_PRIVATE_KEY = "private_vnkO3EDEJvdyiW4jTW4i3gBKHWQ=";
 const IMAGEKIT_UPLOAD_URL =  "https://upload.imagekit.io/api/v1/files/upload"
-// Controller
+
 export const researchSubmit = async (req, res) => {
   try {
     const { category } = req.body; // example extra fields
@@ -108,17 +39,17 @@ export const researchSubmit = async (req, res) => {
     });
 
     const fileUrl = response.data.url;
-    // const isAuthorExisted = await isAuthor.autg
+
     if (isAuthor){
       isAuthor.researchPaperUploads.push({
         researchPaperPdfUrl : fileUrl,
         categoryType:category
        })
-      // isAuthor.researchPaperUploads.push({researchPaperPdfUrl:fileUrl,categoryType:category})
-      const userResearchPaper = await isAuthor.save()
+
+       const userResearchPaper = await isAuthor.save()
       console.log(userResearchPaper)
     }else {
-      // const researchPaperLinkDescription = [].push({researchPaperPdfUrl:fileUrl,categoryType:category})
+
       const userResearchPaper = await researchPaper.create({
        author:req.user._id, 
        researchPaperUploads :  [{
@@ -146,70 +77,14 @@ export const researchSubmit = async (req, res) => {
 {
 ! DOne 
    * "success": "user Profile ",
-    "userInfo": {
-        "firstName": "arnav",
-        "email": "arnavgoyal1317@gmail.com",
-        "role": "publisher",
-        "collegeName": "IIT",
-        "researchPapers": [
-            {
-                "_id": "689831903e0d83a4c784635e",
-                "author": "68982c45f433bf668dee2e3c",
-                "researchPaperUploads": [
-                    {
-                        "researchPaperPdfUrl": "https://ik.imagekit.io/kwy9fhvlz/Resume_aOPHiVAC8.pdf",
-                        "categoryType": "None",
-                        "stats": "accepted",
-                        "comment": "Hello sir Your paper is approved to be published ",
-                        "_id": "689831903e0d83a4c784635f",
-                        "uniqueId": "eaede8fc-f8c7-45a3-9939-898ef4b251a2",
-                        "uploadedAt": "2025-08-10T05:43:44.800Z",
-                        "acceptedToBeReviewer": [
-                            {
-                                "reviewerEmail": "xyz@gmail.com",
-                                "reviewerApproval": true,
-                                "_id": "6898e2b095cd58d6633e8b54"
-                            }
-                        ],
-                        "senderName": [
-                            {
-                                "reviewerEmail": "",
-                                "_id": "6898a16162f449de938080a3"
-                            },
-                            {
-                                "reviewerEmail": "",
-                                "_id": "6898c15b6c05bccfb00c50ee"
-                            },
-                            {
-                                "reviewerEmail": "",
-                                "_id": "6898c1ff979296c675f9d2a8"
-                            }
-                        ]
-                    },
-                    {
-                        "researchPaperPdfUrl": "https://ik.imagekit.io/kwy9fhvlz/AI_Navigation_Assistant_Roadmap_WKj5xu2ys.pdf",
-                        "categoryType": "None",
-                        "stats": "pending",
-                        "comment": "",
-                        "_id": "68983763771b7c844e1896ab",
-                        "uniqueId": "d199a0da-bf2f-410d-b12e-badc6319b657",
-                        "uploadedAt": "2025-08-10T06:08:35.496Z",
-                        "acceptedToBeReviewer": [],
-                        "senderName": []
-                    }
-                ],
-                "__v": 6
-            }
-        ]
-   * }
-}
+
 */
 //  * Working perfectly 
 export const userProfile = async (req, res) => {
   try {
     const user = req.user
     const userId = user._id;
-    const userResearchPaper = await researchPaper.find({ author: userId })
+    const userResearchPaper = await researchPaper.find({ author: userId }).select("-password")
     const userInfo = {
       firstName: user.firstName,
       lastName: user.lastName,
@@ -237,38 +112,7 @@ export const userProfile = async (req, res) => {
 /* 
 {
 ? This is your Data that will look alike for getAllUsers 
-    ! "usefulPapers": [
-        {
-            "email": "arnavgoyal1317@gmail.com",
-            "role": "publisher",
-            "firstName": "arnav",
-            "linkOfPdf": "https://ik.imagekit.io/kwy9fhvlz/Resume_aOPHiVAC8.pdf",
-            "category": "None",
-            "stats": "pending",
-            "uniqueId" : "...."
-        },
-        {
-            "email": "arnavgoyal1317@gmail.com",
-            "role": "publisher",
-            "firstName": "arnav",
-            "linkOfPdf": "https://ik.imagekit.io/kwy9fhvlz/AI_Navigation_Assistant_Roadmap_WKj5xu2ys.pdf",
-            "category": "None",
-            "stats": "pending",
-            "uniqueId" : "...."
 
-        },
-        {
-            "email": "xyz@gmail.com",
-            "role": "reviewer",
-            "firstName": "xyz",
-            "linkOfPdf": "https://ik.imagekit.io/kwy9fhvlz/Fields_of_AI_38Qqe-lqG.pdf",
-            "category": "None",
-            "stats": "pending",
-            "uniqueId" : "...."
-
-        }
-   !]
-}
 */
 export const getAllUserWithResearchPapersPosted = async (req, res) => {
   try {
@@ -306,27 +150,7 @@ export const getAllUserWithResearchPapersPosted = async (req, res) => {
 {
 ! This is data we will get from frontend it will arranged 
    ? "success": " Get user Pdf Link ",
-    "usefulPapers": [
-        {
-            "researchPaperPdfUrl": "https://ik.imagekit.io/kwy9fhvlz/Resume_aOPHiVAC8.pdf",
-            "categoryType": "None",
-            "stats": "pending",
-            "comment": "",
-            "_id": "689831903e0d83a4c784635f",
-            "uniqueId": "eaede8fc-f8c7-45a3-9939-898ef4b251a2",
-            "uploadedAt": "2025-08-10T05:43:44.800Z",
-            "acceptedToBeReviewer": [],
-            "senderName": []n
-        }
-    ],
-    "reviewrs": [
-        {
-            "_id": "68982cacf433bf668dee2e42",
-            "firstName": "xyz",
-            "email": "xyz@gmail.com",
-            "collegeName": "IIT"
-        }
-   ? ]
+   
 }
 */
 //  * Works perfectly 
@@ -368,12 +192,7 @@ export const getuserResearchPaperToCheck = async (req, res) => {
   
 
     const upload = papers.researchPaperUploads.find(u => u.uniqueId === id);
-    // if (upload.stats === "accepted") {
-    //   return res.status(404).json({ message: "This Research paper has been accepted earlier " });
-
-    // } else if (upload.stats === "rejected") {
-    //   return res.status(404).json({ message : "This Research paper has been rejected earlier " });
-    // }
+  
     
     
     res.status(200).json({
@@ -396,48 +215,7 @@ export const getuserResearchPaperToCheck = async (req, res) => {
 {
  ! This is how its will look see 1st one after accepted 
   ?  "message": "Paper result updated successfully",
-    "paper": {
-        "_id": "689831903e0d83a4c784635e",
-        "author": {
-            "_id": "68982c45f433bf668dee2e3c",
-            "firstName": "arnav",
-            "email": "arnavgoyal1317@gmail.com",
-            "title": "CA",
-            "country": "Ind",
-            "phoneNumber": "",
-            "role": "publisher",
-            "collegeName": "IIT",
-            "department": "",
-            "createdAt": "2025-08-10T05:21:09.063Z",
-            "updatedAt": "2025-08-10T05:21:09.063Z",
-            "__v": 0
-        },
-        "researchPaperUploads": [
-            {
-                "researchPaperPdfUrl": "https://ik.imagekit.io/kwy9fhvlz/Resume_aOPHiVAC8.pdf",
-                "categoryType": "None",
-                "stats": "accepted",
-                "comment": "Hello sir Your paper is approved to be published ",
-                "_id": "689831903e0d83a4c784635f",
-                "uniqueId": "eaede8fc-f8c7-45a3-9939-898ef4b251a2",
-                "uploadedAt": "2025-08-10T05:43:44.800Z",
-                "acceptedToBeReviewer": [],
-                "senderName": []
-            },
-            {
-                "researchPaperPdfUrl": "https://ik.imagekit.io/kwy9fhvlz/AI_Navigation_Assistant_Roadmap_WKj5xu2ys.pdf",
-                "categoryType": "None",
-                "stats": "pending",
-                "comment": "",
-                "_id": "68983763771b7c844e1896ab",
-                "uniqueId": "d199a0da-bf2f-410d-b12e-badc6319b657",
-                "uploadedAt": "2025-08-10T06:08:35.496Z",
-                "acceptedToBeReviewer": [],
-                "senderName": []
-            }
-        ],
-        "__v": 1
-   ? }
+   
 }
 
 
@@ -528,32 +306,8 @@ export const sendConfirmationToBeRecieverNotifi = async (req, res) => {
 {
 ! Mail is to be send 
 ! This is how it looks alike when in resposne send 
-   * "success": true,
-    "message": "Get all notifications regarding being a reviewer",
-    "matchingPapers": [
-        {
-            "author": {
-                "_id": "68982c45f433bf668dee2e3c",
-                "firstName": "arnav",
-                "email": "arnavgoyal1317@gmail.com",
-                "title": "CA",
-                "country": "Ind",
-                "phoneNumber": "",
-                "role": "publisher",
-                "collegeName": "IIT",
-                "department": "",
-                "createdAt": "2025-08-10T05:21:09.063Z",
-                "updatedAt": "2025-08-10T05:21:09.063Z",
-                "__v": 0
-            },
-            "uploads": [
-                {
-                    "researchPaperPdfUrl": "https://ik.imagekit.io/kwy9fhvlz/Resume_aOPHiVAC8.pdf"
-                }
-            ]
-        }
-   * ]
-}
+
+
 
 */
 
@@ -599,9 +353,7 @@ export const getNotifiToBeReciever = async (req, res) => {
 /*
 ! mail is to be added 
 ! This is what I get ""
-*{
-    "message": "Accepted to be a reviewer!",
-*}
+
 * Works fine 
 */
 export const AcceptedReviewer = async (req, res) => {
@@ -636,9 +388,7 @@ export const AcceptedReviewer = async (req, res) => {
       reviewerApproval
     });
 
-    // upload.senderName = upload.senderName.filter(
-    //   sender => sender.reviewerEmail !== reviewerEmail
-    // );
+    
 
     await paper.save();
 
