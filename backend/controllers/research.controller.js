@@ -765,6 +765,10 @@ export const assignReviewerToPaper = async (req, res) => {
     upload.senderName.push({
       reviewerEmail: reviewer.email
     });
+    const status = upload.acceptedToBeReviewer[0].reviewerApproval; 
+    const comment = upload.acceptedToBeReviewer[0].reviewercomment;
+    const reviewerPaperResult = upload.acceptedToBeReviewer[0].reviewerPaperResult;
+
 
     await paper.save();
 
@@ -777,7 +781,11 @@ export const assignReviewerToPaper = async (req, res) => {
         name: `${reviewer.firstName} ${reviewer.lastName}`,
         email: reviewer.email
       },
-      paperTitle: `${paper.author.firstName}'s research paper`
+      paperTitle: `${paper.author.firstName}'s research paper`,
+      status ,
+      comment , 
+      reviewerPaperResult
+
     });
 
   } catch (error) {
