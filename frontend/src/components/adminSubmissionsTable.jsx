@@ -9,6 +9,10 @@ const AdminSubmissionsTable = () => {
   const [showReviewers, setShowReviewers] = useState(false);
   const [loadingReviewers, setLoadingReviewers] = useState(false);
 
+  // NEW: store fetched comments per reviewer id
+  const [commentsMap, setCommentsMap] = useState({});
+  const [loadingComments, setLoadingComments] = useState(false);
+
   useEffect(() => {
     const fetchSubmissions = async () => {
       try {
@@ -27,27 +31,18 @@ const AdminSubmissionsTable = () => {
   // Prevent body scroll when modal is open
   useEffect(() => {
     if (selectedSubmission) {
-      // Store original styles
       const originalStyle = window.getComputedStyle(document.body).overflow;
-      
-      // Disable body scroll
       document.body.style.overflow = "hidden";
       document.body.style.position = "fixed";
       document.body.style.top = `-${window.scrollY}px`;
       document.body.style.width = "100%";
-      
-      // Return cleanup function
+
       return () => {
-        // Get the scroll position to restore
         const scrollY = document.body.style.top;
-        
-        // Restore original styles
         document.body.style.overflow = originalStyle;
         document.body.style.position = "";
         document.body.style.top = "";
         document.body.style.width = "";
-        
-        // Restore scroll position
         window.scrollTo(0, parseInt(scrollY || "0") * -1);
       };
     }
@@ -64,7 +59,6 @@ const AdminSubmissionsTable = () => {
       setShowReviewers(true);
     } catch (err) {
       console.error("❌ Error fetching reviewers:", err);
-      // Fallback: Mock data for testing
       setReviewers([
         { _id: "1", firstName: "Dr. John", lastName: "Smith", email: "john@example.com", specialization: "AI/ML" },
         { _id: "2", firstName: "Dr. Sarah", lastName: "Johnson", email: "sarah@example.com", specialization: "Data Science" },
@@ -76,33 +70,69 @@ const AdminSubmissionsTable = () => {
     }
   };
 
+  // NEW: fetch comment for a reviewer for the currently selected submission (by uniqueId)
+  const showComments = async (reviewerId) => {
+    if (commentsMap[reviewerId]) {
+      setCommentsMap(prev => {
+        const copy = { ...prev };
+        delete copy[reviewerId];
+        return copy;
+      });
+      return;
+    }
+
+    if (!selectedSubmission) {
+      toast.error("No submission selected.");
+      return;
+    }
+
+    setLoadingComments(true);
+    try {
+      const reviewer = reviewers.find(r => r._id === reviewerId || r._id?.toString() === reviewerId);
+      const reviewerEmail = reviewer?.email;
+      const token = localStorage.getItem("token");
+      const res = await API.get(`/research/admin/papers/${selectedSubmission.uniqueId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      const uploads = res.data.usefulPapers || [];
+      const upload = Array.isArray(uploads)
+        ? uploads.find(u => u.uniqueId === selectedSubmission.uniqueId) || uploads
+        : uploads;
+
+      const acceptedList = upload?.acceptedToBeReviewer || [];
+      const reviewerEntry = acceptedList.find(r => r.reviewerEmail === reviewerEmail);
+
+      const comment = reviewerEntry?.reviewercomment ?? upload?.comment ?? "No comment provided.";
+      const reviewerPaperResult = reviewerEntry?.reviewerPaperResult ?? "N/A";
+
+      setCommentsMap(prev => ({ ...prev, [reviewerId]: { comment, reviewerPaperResult } }));
+    } catch (err) {
+      console.error("❌ Error fetching reviewer comments:", err);
+      toast.error("Failed to fetch comments.");
+    } finally {
+      setLoadingComments(false);
+    }
+  };
+
   const assignReviewer = async (reviewerId) => {
     try {
       const token = localStorage.getItem("token");
       await API.patch(`/research/admin/papers/${selectedSubmission.uploadId}/assign-reviewer`, {
         reviewerId: reviewerId
       }, {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { Authorization: `Bearer ${token}` }
       });
-      
+
       toast.success("Reviewer assigned successfully!");
-      
-      // Update the selected submission with assignment info
+
       const updatedSubmission = { ...selectedSubmission, assignedReviewer: reviewerId };
       setSelectedSubmission(updatedSubmission);
-      
-      // Update the submissions list to reflect the change
-      setSubmissions(prev => 
-        prev.map(sub => 
-          sub.uploadId === selectedSubmission.uploadId 
-            ? { ...sub, assignedReviewer: reviewerId }
-            : sub
-        )
+      setSubmissions(prev =>
+        prev.map(sub => sub.uploadId === selectedSubmission.uploadId ? { ...sub, assignedReviewer: reviewerId } : sub)
       );
-      
-      // Go back to details view
       setShowReviewers(false);
-      
+
     } catch (err) {
       console.error("❌ Error assigning reviewer:", err);
       toast.error("Error assigning reviewer. Please try again.");
@@ -111,7 +141,7 @@ const AdminSubmissionsTable = () => {
 
   const openModal = (submission) => {
     setSelectedSubmission(submission);
-    setShowReviewers(false); // Reset reviewer view when opening modal
+    setShowReviewers(false);
   };
 
   const closeModal = () => {
@@ -121,17 +151,21 @@ const AdminSubmissionsTable = () => {
   };
 
   const getAssignmentStatusStyle = (assignedReviewer) => {
-    return assignedReviewer 
-      ? { color: "green"}
-      : { color: "red"};
+    return assignedReviewer
+      ? { color: "green" }
+      : { color: "red" };
   };
 
   const getStatusStyle = (status) => {
     switch (status) {
-      case "accepted": return { color: "green" };
-      case "pending": return { color: "orange" };
-      case "rejected": return { color: "red" };
-      default: return {};
+      case "accepted":
+        return { color: "green" };
+      case "pending":
+        return { color: "orange" };
+      case "rejected":
+        return { color: "red" };
+      default:
+        return {};
     }
   };
 
@@ -200,14 +234,12 @@ const AdminSubmissionsTable = () => {
           className="modal-overlay"
           onClick={closeModal}
           onWheel={(e) => {
-            // Allow scrolling only within the modal content
             const modalContent = e.currentTarget.querySelector('.modal-content');
             if (!modalContent.contains(e.target)) {
               e.preventDefault();
             }
           }}
           onTouchMove={(e) => {
-            // Prevent touch scrolling on mobile
             const modalContent = e.currentTarget.querySelector('.modal-content');
             if (!modalContent.contains(e.target)) {
               e.preventDefault();
@@ -215,16 +247,16 @@ const AdminSubmissionsTable = () => {
           }}
           style={{
             position: "fixed",
-            top: 0, 
-            left: 0, 
-            width: "100%", 
+            top: 0,
+            left: 0,
+            width: "100%",
             height: "100%",
             backgroundColor: "rgba(0,0,0,0.5)",
             display: "flex",
             justifyContent: "center",
             alignItems: "center",
             zIndex: 1000,
-            overflowY: "hidden", // Changed from "auto" to "hidden"
+            overflowY: "hidden",
           }}
         >
           <div
@@ -234,19 +266,18 @@ const AdminSubmissionsTable = () => {
               background: "#fff",
               padding: "20px",
               borderRadius: "8px",
-              width: showReviewers ? "700px" : "500px", // Wider when showing reviewers
-              maxWidth: "90vw", // Responsive width
-              maxHeight: "90vh", // Responsive height
-              overflowY: "auto", // Allow scrolling within modal
-              margin: "auto", // Center the modal
+              width: showReviewers ? "700px" : "500px",
+              maxWidth: "90vw",
+              maxHeight: "90vh",
+              overflowY: "auto",
+              margin: "auto",
             }}
           >
             <div style={{ textAlign: "right", cursor: "pointer" }} onClick={closeModal}>
               ✖
             </div>
-            
+
             {!showReviewers ? (
-              // Submission Details View
               <>
                 <h3>Submission Details</h3>
                 <p><strong>Author:</strong> {selectedSubmission.firstName + ' ' + selectedSubmission.lastName}</p>
@@ -257,7 +288,7 @@ const AdminSubmissionsTable = () => {
                   {selectedSubmission.assignedReviewer ? 'Assigned' : 'Not Assigned'}
                 </span></p>
                 <p><strong>PDF Link:</strong> <a href={selectedSubmission.linkOfPdf} target="_blank" rel="noreferrer">Open PDF</a></p>
-                
+
                 <div style={{ marginTop: "20px", textAlign: "center" }}>
                   <button
                     onClick={fetchReviewers}
@@ -277,7 +308,6 @@ const AdminSubmissionsTable = () => {
                 </div>
               </>
             ) : (
-              // Reviewers List View
               <>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
                   <h3>Select Reviewer to Assign</h3>
@@ -295,9 +325,9 @@ const AdminSubmissionsTable = () => {
                     Back to Details
                   </button>
                 </div>
-                
+
                 <p><strong>Paper:</strong> {selectedSubmission.firstName}'s submission</p>
-                
+
                 <div style={{ maxHeight: "400px", overflowY: "auto" }}>
                   {reviewers.length === 0 ? (
                     <p>No reviewers available.</p>
@@ -311,36 +341,63 @@ const AdminSubmissionsTable = () => {
                           padding: "15px",
                           marginBottom: "10px",
                           display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "center"
+                          flexDirection: "column",
+                          gap: "10px"
                         }}
                       >
-                        <div>
-                          <h4 style={{ margin: "0 0 5px 0" }}>
-                            {reviewer.firstName} {reviewer.lastName}
-                          </h4>
-                          <p style={{ margin: "0 0 5px 0", color: "#666" }}>
-                            {reviewer.email}
-                          </p>
-                          {reviewer.specialization && (
-                            <p style={{ margin: "0", fontSize: "14px", color: "#888" }}>
-                              <strong>Specialization:</strong> {reviewer.specialization}
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                          <div>
+                            <h4 style={{ margin: "0 0 5px 0" }}>
+                              {reviewer.firstName} {reviewer.lastName}
+                            </h4>
+                            <p style={{ margin: "0 0 5px 0", color: "#666" }}>
+                              {reviewer.email}
                             </p>
-                          )}
+                            {reviewer.specialization && (
+                              <p style={{ margin: "0", fontSize: "14px", color: "#888" }}>
+                                <strong>Specialization:</strong> {reviewer.specialization}
+                              </p>
+                            )}
+                          </div>
+
+                          <div style={{ display: "flex", gap: "8px" }}>
+                            <button
+                              onClick={() => showComments(reviewer._id)}
+                              style={{
+                                backgroundColor: "#0a8da4ff",
+                                color: "white",
+                                padding: "8px 16px",
+                                border: "none",
+                                borderRadius: "4px",
+                                cursor: "pointer"
+                              }}
+                            >
+                              {commentsMap[reviewer._id] ? "Hide Comments" : (loadingComments ? "Loading..." : "Comments")}
+                            </button>
+
+                            <button
+                              onClick={() => assignReviewer(reviewer._id)}
+                              style={{
+                                backgroundColor: "#28a745",
+                                color: "white",
+                                padding: "8px 16px",
+                                border: "none",
+                                borderRadius: "4px",
+                                cursor: "pointer"
+                              }}
+                            >
+                              Assign
+                            </button>
+                          </div>
                         </div>
-                        <button
-                          onClick={() => assignReviewer(reviewer._id)}
-                          style={{
-                            backgroundColor: "#28a745",
-                            color: "white",
-                            padding: "8px 16px",
-                            border: "none",
-                            borderRadius: "4px",
-                            cursor: "pointer"
-                          }}
-                        >
-                          Assign
-                        </button>
+
+                        {/* NEW: show comment block when present */}
+                        {commentsMap[reviewer._id] && (
+                          <div style={{ marginTop: 6, padding: 12, background: "#f8f9fa", borderRadius: 6 }}>
+                            <p style={{ margin: 0 }}><strong>Comment:</strong> {commentsMap[reviewer._id].comment}</p>
+                            <p style={{ margin: 0 }}><strong>Reviewer Result:</strong> {commentsMap[reviewer._id].reviewerPaperResult}</p>
+                          </div>
+                        )}
                       </div>
                     ))
                   )}
