@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import API from "../api/axios"; // assuming axios instance is here
+import API from "../api/axios"; 
 
 function Existingemail() {
   const [email, setEmail] = useState("");
@@ -9,16 +9,12 @@ function Existingemail() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError(""); // clear old errors
+    setError(""); 
 
     try {
-      // 🔹 Call backend API to check if email exists
-      const res = await API.post("/api/auth/request-reset", { email });
-
+    const res = await API.post("/auth/request-reset", { email });
       if (res.data.success) {
-        // ✅ Backend confirms OTP is sent
-        navigate("/reset-password", { state: { email } }); 
-        // you can pass email to next page using location.state
+        navigate("/verify-otp", { state: { email } }); 
       } else {
         setError("This email is not registered.");
       }
@@ -44,7 +40,7 @@ function Existingemail() {
           />
         </div>
 
-        <button type="submit">Send OTP</button>
+        <button type="submit" onSubmit={handleSubmit}>Send OTP</button>
       </form>
     </div>
   );
