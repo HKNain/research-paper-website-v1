@@ -475,15 +475,18 @@ export const getAllReviewers = async (req, res) => {
 
 // Assign reviewer to a specific paper upload
 export const assignReviewerToPaper = async (req, res) => {
+  console.log("calling assign paper")
   try {
     const { uploadId } = req.params;
     const { reviewerId } = req.body;
+    console.log("searching for reviewer")
 
     // Find the reviewer
     const reviewer = await User.findById(reviewerId);
     if (!reviewer || reviewer.role !== "reviewer") {
       return res.status(404).json({ error: "Reviewer not found" });
     }
+    console.log("searching for paper")
 
     // Find the paper with the specific upload
     const paper = await researchPaper.findOne({
@@ -507,18 +510,25 @@ export const assignReviewerToPaper = async (req, res) => {
 
     if (alreadyNotified) {
       return res.status(400).json({ 
-        error: "This reviewer has already been notified for this paper" 
+        message: "This reviewer has already been notified for this paper" 
       });
     }
-
+console.log("perplexity error test")
     // Add reviewer to senderName array (this is how your system tracks assignments)
     upload.senderName.push({
       reviewerEmail: reviewer.email
     });
-    const status = upload.acceptedToBeReviewer[0].reviewerApproval; 
-    const comment = upload.acceptedToBeReviewer[0].reviewercomment;
-    const reviewerPaperResult = upload.acceptedToBeReviewer[0].reviewerPaperResult;
+    // const status = upload.acceptedToBeReviewer[0].reviewerApproval; 
+    // const comment = upload.acceptedToBeReviewer[0].reviewercomment;
+    // const reviewerPaperResult = upload.acceptedToBeReviewer[0].reviewerPaperResult;
+    let status = null, comment = null, reviewerPaperResult = null;
 
+if (upload.acceptedToBeReviewer && upload.acceptedToBeReviewer.length > 0) {
+  status = upload.acceptedToBeReviewer[0].reviewerApproval;
+  comment = upload.acceptedToBeReviewer[0].reviewercomment;
+  reviewerPaperResult = upload.acceptedToBeReviewer[0].reviewerPaperResult;
+}
+console.log("saving paper with reviewer")
 
     await paper.save();
 

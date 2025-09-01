@@ -60,9 +60,27 @@ const AdminSubmissionsTable = () => {
     } catch (err) {
       console.error("❌ Error fetching reviewers:", err);
       setReviewers([
-        { _id: "1", firstName: "Dr. John", lastName: "Smith", email: "john@example.com", specialization: "AI/ML" },
-        { _id: "2", firstName: "Dr. Sarah", lastName: "Johnson", email: "sarah@example.com", specialization: "Data Science" },
-        { _id: "3", firstName: "Dr. Mike", lastName: "Brown", email: "mike@example.com", specialization: "Software Engineering" },
+        {
+          _id: "1",
+          firstName: "Dr. John",
+          lastName: "Smith",
+          email: "john@example.com",
+          specialization: "AI/ML",
+        },
+        {
+          _id: "2",
+          firstName: "Dr. Sarah",
+          lastName: "Johnson",
+          email: "sarah@example.com",
+          specialization: "Data Science",
+        },
+        {
+          _id: "3",
+          firstName: "Dr. Mike",
+          lastName: "Brown",
+          email: "mike@example.com",
+          specialization: "Software Engineering",
+        },
       ]);
       setShowReviewers(true);
     } finally {
@@ -73,7 +91,7 @@ const AdminSubmissionsTable = () => {
   // NEW: fetch comment for a reviewer for the currently selected submission (by uniqueId)
   const showComments = async (reviewerId) => {
     if (commentsMap[reviewerId]) {
-      setCommentsMap(prev => {
+      setCommentsMap((prev) => {
         const copy = { ...prev };
         delete copy[reviewerId];
         return copy;
@@ -88,25 +106,39 @@ const AdminSubmissionsTable = () => {
 
     setLoadingComments(true);
     try {
-      const reviewer = reviewers.find(r => r._id === reviewerId || r._id?.toString() === reviewerId);
+      const reviewer = reviewers.find(
+        (r) => r._id === reviewerId || r._id?.toString() === reviewerId
+      );
       const reviewerEmail = reviewer?.email;
       const token = localStorage.getItem("token");
-      const res = await API.get(`/research/admin/papers/${selectedSubmission.uniqueId}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const res = await API.get(
+        `/research/admin/papers/${selectedSubmission.uniqueId}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
 
       const uploads = res.data.usefulPapers || [];
       const upload = Array.isArray(uploads)
-        ? uploads.find(u => u.uniqueId === selectedSubmission.uniqueId) || uploads
+        ? uploads.find((u) => u.uniqueId === selectedSubmission.uniqueId) ||
+          uploads
         : uploads;
 
       const acceptedList = upload?.acceptedToBeReviewer || [];
-      const reviewerEntry = acceptedList.find(r => r.reviewerEmail === reviewerEmail);
+      const reviewerEntry = acceptedList.find(
+        (r) => r.reviewerEmail === reviewerEmail
+      );
 
-      const comment = reviewerEntry?.reviewercomment ?? upload?.comment ?? "No comment provided.";
+      const comment =
+        reviewerEntry?.reviewercomment ??
+        upload?.comment ??
+        "No comment provided.";
       const reviewerPaperResult = reviewerEntry?.reviewerPaperResult ?? "N/A";
 
-      setCommentsMap(prev => ({ ...prev, [reviewerId]: { comment, reviewerPaperResult } }));
+      setCommentsMap((prev) => ({
+        ...prev,
+        [reviewerId]: { comment, reviewerPaperResult },
+      }));
     } catch (err) {
       console.error("❌ Error fetching reviewer comments:", err);
       toast.error("Failed to fetch comments.");
@@ -118,21 +150,31 @@ const AdminSubmissionsTable = () => {
   const assignReviewer = async (reviewerId) => {
     try {
       const token = localStorage.getItem("token");
-      await API.patch(`/research/admin/papers/${selectedSubmission.uploadId}/assign-reviewer`, {
-        reviewerId: reviewerId
-      }, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await API.patch(
+        `/research/admin/papers/${selectedSubmission.uploadId}/assign-reviewer`,
+        {
+          reviewerId: reviewerId,
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
 
       toast.success("Reviewer assigned successfully!");
 
-      const updatedSubmission = { ...selectedSubmission, assignedReviewer: reviewerId };
+      const updatedSubmission = {
+        ...selectedSubmission,
+        assignedReviewer: reviewerId,
+      };
       setSelectedSubmission(updatedSubmission);
-      setSubmissions(prev =>
-        prev.map(sub => sub.uploadId === selectedSubmission.uploadId ? { ...sub, assignedReviewer: reviewerId } : sub)
+      setSubmissions((prev) =>
+        prev.map((sub) =>
+          sub.uploadId === selectedSubmission.uploadId
+            ? { ...sub, assignedReviewer: reviewerId }
+            : sub
+        )
       );
       setShowReviewers(false);
-
     } catch (err) {
       console.error("❌ Error assigning reviewer:", err);
       toast.error("Error assigning reviewer. Please try again.");
@@ -151,9 +193,7 @@ const AdminSubmissionsTable = () => {
   };
 
   const getAssignmentStatusStyle = (assignedReviewer) => {
-    return assignedReviewer
-      ? { color: "green" }
-      : { color: "red" };
+    return assignedReviewer ? { color: "green" } : { color: "red" };
   };
 
   const getStatusStyle = (status) => {
@@ -209,18 +249,30 @@ const AdminSubmissionsTable = () => {
             }}
           >
             <div>{index + 1}</div>
-            <div>{sub.firstName + ' ' + sub.lastName}</div>
+            <div>{sub.firstName + " " + sub.lastName}</div>
             <div>
               <a href={sub.linkOfPdf} target="_blank" rel="noreferrer">
                 View PDF
               </a>
             </div>
             <div style={getStatusStyle(sub.stats)}>{sub.stats}</div>
-            <div style={getAssignmentStatusStyle(sub.assignedReviewer)}>
-              {sub.assignedReviewer ? 'Assigned' : 'Not Assigned'}
+            <div
+              style={getAssignmentStatusStyle(
+                sub.assignedReviewer ||
+                  (sub.acceptedToBeReviewer &&
+                    sub.acceptedToBeReviewer.length > 0)
+              )}
+            >
+              {sub.assignedReviewer ||
+              (sub.acceptedToBeReviewer && sub.acceptedToBeReviewer.length > 0)
+                ? "Assigned"
+                : "Not Assigned"}
             </div>
             <div>
-              <a onClick={() => openModal(sub)} style={{ cursor: "pointer", color: "blue" }}>
+              <a
+                onClick={() => openModal(sub)}
+                style={{ cursor: "pointer", color: "blue" }}
+              >
                 Details
               </a>
             </div>
@@ -234,13 +286,15 @@ const AdminSubmissionsTable = () => {
           className="modal-overlay"
           onClick={closeModal}
           onWheel={(e) => {
-            const modalContent = e.currentTarget.querySelector('.modal-content');
+            const modalContent =
+              e.currentTarget.querySelector(".modal-content");
             if (!modalContent.contains(e.target)) {
               e.preventDefault();
             }
           }}
           onTouchMove={(e) => {
-            const modalContent = e.currentTarget.querySelector('.modal-content');
+            const modalContent =
+              e.currentTarget.querySelector(".modal-content");
             if (!modalContent.contains(e.target)) {
               e.preventDefault();
             }
@@ -273,43 +327,93 @@ const AdminSubmissionsTable = () => {
               margin: "auto",
             }}
           >
-            <div style={{ textAlign: "right", cursor: "pointer" }} onClick={closeModal}>
+            <div
+              style={{ textAlign: "right", cursor: "pointer" }}
+              onClick={closeModal}
+            >
               ✖
             </div>
 
             {!showReviewers ? (
               <>
                 <h3>Submission Details</h3>
-                <p><strong>Author:</strong> {selectedSubmission.firstName + ' ' + selectedSubmission.lastName}</p>
-                <p><strong>Email:</strong> {selectedSubmission.email}</p>
-                <p><strong>Category:</strong> {selectedSubmission.category}</p>
-                <p><strong>Status:</strong> <span style={getStatusStyle(selectedSubmission.stats)}>{selectedSubmission.stats}</span></p>
-                <p><strong>Assignment Status:</strong> <span style={getAssignmentStatusStyle(selectedSubmission.assignedReviewer)}>
-                  {selectedSubmission.assignedReviewer ? 'Assigned' : 'Not Assigned'}
-                </span></p>
-                <p><strong>PDF Link:</strong> <a href={selectedSubmission.linkOfPdf} target="_blank" rel="noreferrer">Open PDF</a></p>
+                <p>
+                  <strong>Author:</strong>{" "}
+                  {selectedSubmission.firstName +
+                    " " +
+                    selectedSubmission.lastName}
+                </p>
+                <p>
+                  <strong>Email:</strong> {selectedSubmission.email}
+                </p>
+                <p>
+                  <strong>Category:</strong> {selectedSubmission.category}
+                </p>
+                <p>
+                  <strong>Status:</strong>{" "}
+                  <span style={getStatusStyle(selectedSubmission.stats)}>
+                    {selectedSubmission.stats}
+                  </span>
+                </p>
+                <p>
+                  <strong>Assignment Status:</strong>{" "}
+                  <span
+                    style={getAssignmentStatusStyle(
+                      selectedSubmission.assignedReviewer
+                    )}
+                  >
+                    {selectedSubmission.assignedReviewer ||
+                    (selectedSubmission.acceptedToBeReviewer &&
+                      selectedSubmission.acceptedToBeReviewer.length > 0)
+                      ? "Assigned"
+                      : "Not Assigned"}
+                  </span>
+                </p>
+                <p>
+                  <strong>PDF Link:</strong>{" "}
+                  <a
+                    href={selectedSubmission.linkOfPdf}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Open PDF
+                  </a>
+                </p>
 
                 <div style={{ marginTop: "20px", textAlign: "center" }}>
                   <button
                     onClick={fetchReviewers}
                     disabled={loadingReviewers}
                     style={{
-                      backgroundColor: selectedSubmission.assignedReviewer ? "#6c757d" : "#007bff",
+                      backgroundColor: selectedSubmission.assignedReviewer
+                        ? "#6c757d"
+                        : "#007bff",
                       color: "white",
                       padding: "10px 20px",
                       border: "none",
                       borderRadius: "5px",
                       cursor: loadingReviewers ? "not-allowed" : "pointer",
-                      fontSize: "16px"
+                      fontSize: "16px",
                     }}
                   >
-                    {loadingReviewers ? "Loading..." : selectedSubmission.assignedReviewer ? "Reassign Task" : "Assign Task"}
+                    {loadingReviewers
+                      ? "Loading..."
+                      : selectedSubmission.assignedReviewer
+                      ? "Reassign Task"
+                      : "Assign Task"}
                   </button>
                 </div>
               </>
             ) : (
               <>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    marginBottom: "20px",
+                  }}
+                >
                   <h3>Select Reviewer to Assign</h3>
                   <button
                     onClick={() => setShowReviewers(false)}
@@ -319,14 +423,17 @@ const AdminSubmissionsTable = () => {
                       padding: "5px 15px",
                       border: "none",
                       borderRadius: "3px",
-                      cursor: "pointer"
+                      cursor: "pointer",
                     }}
                   >
                     Back to Details
                   </button>
                 </div>
 
-                <p><strong>Paper:</strong> {selectedSubmission.firstName}'s submission</p>
+                <p>
+                  <strong>Paper:</strong> {selectedSubmission.firstName}'s
+                  submission
+                </p>
 
                 <div style={{ maxHeight: "400px", overflowY: "auto" }}>
                   {reviewers.length === 0 ? (
@@ -342,10 +449,16 @@ const AdminSubmissionsTable = () => {
                           marginBottom: "10px",
                           display: "flex",
                           flexDirection: "column",
-                          gap: "10px"
+                          gap: "10px",
                         }}
                       >
-                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                        <div
+                          style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                          }}
+                        >
                           <div>
                             <h4 style={{ margin: "0 0 5px 0" }}>
                               {reviewer.firstName} {reviewer.lastName}
@@ -354,8 +467,15 @@ const AdminSubmissionsTable = () => {
                               {reviewer.email}
                             </p>
                             {reviewer.specialization && (
-                              <p style={{ margin: "0", fontSize: "14px", color: "#888" }}>
-                                <strong>Specialization:</strong> {reviewer.specialization}
+                              <p
+                                style={{
+                                  margin: "0",
+                                  fontSize: "14px",
+                                  color: "#888",
+                                }}
+                              >
+                                <strong>Specialization:</strong>{" "}
+                                {reviewer.specialization}
                               </p>
                             )}
                           </div>
@@ -369,10 +489,14 @@ const AdminSubmissionsTable = () => {
                                 padding: "8px 16px",
                                 border: "none",
                                 borderRadius: "4px",
-                                cursor: "pointer"
+                                cursor: "pointer",
                               }}
                             >
-                              {commentsMap[reviewer._id] ? "Hide Comments" : (loadingComments ? "Loading..." : "Comments")}
+                              {commentsMap[reviewer._id]
+                                ? "Hide Comments"
+                                : loadingComments
+                                ? "Loading..."
+                                : "Comments"}
                             </button>
 
                             <button
@@ -383,7 +507,7 @@ const AdminSubmissionsTable = () => {
                                 padding: "8px 16px",
                                 border: "none",
                                 borderRadius: "4px",
-                                cursor: "pointer"
+                                cursor: "pointer",
                               }}
                             >
                               Assign
@@ -393,9 +517,22 @@ const AdminSubmissionsTable = () => {
 
                         {/* NEW: show comment block when present */}
                         {commentsMap[reviewer._id] && (
-                          <div style={{ marginTop: 6, padding: 12, background: "#f8f9fa", borderRadius: 6 }}>
-                            <p style={{ margin: 0 }}><strong>Comment:</strong> {commentsMap[reviewer._id].comment}</p>
-                            <p style={{ margin: 0 }}><strong>Reviewer Result:</strong> {commentsMap[reviewer._id].reviewerPaperResult}</p>
+                          <div
+                            style={{
+                              marginTop: 6,
+                              padding: 12,
+                              background: "#f8f9fa",
+                              borderRadius: 6,
+                            }}
+                          >
+                            <p style={{ margin: 0 }}>
+                              <strong>Comment:</strong>{" "}
+                              {commentsMap[reviewer._id].comment}
+                            </p>
+                            <p style={{ margin: 0 }}>
+                              <strong>Reviewer Result:</strong>{" "}
+                              {commentsMap[reviewer._id].reviewerPaperResult}
+                            </p>
                           </div>
                         )}
                       </div>
