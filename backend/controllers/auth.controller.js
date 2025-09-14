@@ -2,6 +2,7 @@ import User from "../models/user.model.js";
 import bcrypt from "bcryptjs";
 import generateTokenAndSetCookie from "../utils/generateToken.js";
 import transporter from "../utils/nodemailer.js";
+import Otp from "../models/Otp.model.js";
 
 export const signup = async (req, res) => {
   try {
@@ -240,59 +241,106 @@ export const login = async (req, res) => {
   }
 };
 
-export const sendResetOtp = async (req,res) =>{
-    const {email}  = req.body;
+export const sendResetOtp = async (req, res) => {
+  const { email } = req.body;
 
-    if (!email)
-    {
-       return res.json({
-            success: false,
-            message: "Email is required"
-        })
+  if (!email) {
+    return res.json({
+      success: false,
+      message: "Email is required",
+    });
+  }
+
+  try {
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.json({
+        success: false,
+        message: "User not found",
+      });
     }
 
-    try {
-        
-        const user = await userModel.findOne({email})
+    const otp = String(Math.floor(100000 + Math.random() * 900000));
 
-         if (!user)
-        {
-          return  res.json({
-                success: false,
-                message: "User not found"
-            })
-        }
+    // Delete old OTP if exists
+    await Otp.deleteOne({ email });
 
-        const otp = String(Math.floor(100000 + Math.random() * 900000))
+    // Save new OTP in Otp model
+    const newOtp = new Otp({
+      email,
+      otp,
+      expireAt: Date.now() + 15 * 60 * 1000, // 15 min expiry
+    });
+    await newOtp.save();
 
-       user.resetOtp = otp;
-       user.resetOtpExpireAt = Date.now() + 15 * 60 * 1000;
+    // Send OTP mail
+    const mailOption = {
+      from: process.env.SENDER_EMAIL,
+      to: user.email,
+      subject: "Password Reset OTP",
+      html: `Your OTP for resetting your password is <b>${otp}</b>. It will expire in 15 minutes.`,
+    };
 
-       await user.save();
+    await transporter.sendMail(mailOption);
 
-       const mailOption = {
-         from: process.env.SENDER_EMAIL,
-            to: user.email , 
-            subject: 'Password Reset OTP',
-            // text: `Your OTP for resetting your password is ${otp}.
-            // Use this OTP to proceed with resetting your password`,
-            html: PASSWORD_RESET_TEMPLATE.replace('{{otp}}', otp).replace('{{email}}', user.email)
-       }
+    return res.json({
+      success: true,
+      message: "OTP sent to your email",
+    });
+  } catch (error) {
+    return res.json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
 
-       await transporter.sendMail(mailOption);
+export const verifyOtp = async (req, res) => {
+  try {
+    const { email, otp } = req.body;
 
-       return res.json({
-        success: true,
-        message: "OTP sent to your email"
-       });
-
-    } catch (error) {
-        res.json({
-            success: false,
-            message: error.message
-        })
+    if (!email || !otp) {
+      return res.json({
+        success: false,
+        message: "Email and OTP are required",
+      });
     }
-}
+
+    const otpDoc = await Otp.findOne({ email });
+    if (!otpDoc) {
+      return res.json({
+        success: false,
+        message: "OTP not found, please request again",
+      });
+    }
+
+    if (otpDoc.otp !== otp) {
+      return res.json({
+        success: false,
+        message: "Invalid OTP",
+      });
+    }
+
+    if (otpDoc.expireAt < Date.now()) {
+      return res.json({
+        success: false,
+        message: "OTP expired",
+      });
+    }
+
+    return res.json({
+      success: true,
+      message: "OTP verified successfully",
+    });
+  } catch (error) {
+    console.error("Error in verifyOtp:", error);
+    return res.json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+};
 
 export const resetPassword = async(req,res)=>{
     const {email , otp , newPassword} = req.body;
@@ -307,7 +355,7 @@ export const resetPassword = async(req,res)=>{
 
     try {
         
-        const user = await userModel.findOne({email})
+        const user = await User.findOne({email})
         if (!user)
         {
             res.json({

@@ -24,6 +24,7 @@ import Signup from './pages/signup.jsx';
 import SubmitPaper from './pages/submit.jsx';
 import Reset_password from './pages/Reset_password.jsx';
 import Existingemail from './pages/existingemail.jsx';
+import VerifyOtp from './pages/VerifyOtp.jsx';
 
 // Import Header component
 import Header from './components/header.jsx';
@@ -48,7 +49,8 @@ import './styles/reviewProcess.css';
 import './styles/signup.css';
 import './styles/submit.css';
 import './styles/resetpassword.css';
-import './styles/existingemail.css'
+import './styles/existingemail.css';
+import './styles/VerifyOtp.css';
 
 // import './styles/profileAuthor.css';
 
@@ -109,6 +111,7 @@ function AppContent() {
             <Route path="/submit" element={<SubmitPaper />} />
             <Route path="/reset-password" element={<Reset_password />} />
             <Route path="/existingemail" element={<Existingemail/>} />
+            <Route path="/verify-otp" element={<VerifyOtp/>} />
             
             {/* Fallback route */}
             <Route path="*" element={<NotFound/>} />

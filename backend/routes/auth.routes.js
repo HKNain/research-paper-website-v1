@@ -1,5 +1,5 @@
 import express from "express";
-import { login, logout, signup, getMe } from "../controllers/auth.controller.js";
+import { login, logout, signup, getMe , sendResetOtp , resetPassword , verifyOtp} from "../controllers/auth.controller.js";
 import protectRoute from "../middleware/protectRoute.js";
 import { changePassword } from "../controllers/auth.controller.js";
 import User from "../models/user.model.js";
@@ -14,8 +14,11 @@ router.post("/logout", logout);
 
 router.get("/me", protectRoute, getMe);
 
-router.patch("/changepassword", changePassword);
+router.post("/request-reset", sendResetOtp); 
 
+router.post("/verify-otp", verifyOtp);
+
+router.patch("/changepassword", changePassword);
 
 
 
