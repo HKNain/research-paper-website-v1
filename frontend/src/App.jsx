@@ -14,7 +14,7 @@ import CorrectionPage from './pages/correction-policy.jsx';
 import EditorialPage from './pages/editorial.jsx';
 import Ethics from './pages/ethics.jsx';
 import Login from './pages/login.jsx';
-import NotFound from './pages/notfound.jsx';
+import NotFound from './pages/notFound.jsx';
 import PlagiarismPolicy from './pages/plagiarism-policy.jsx';
 import Profile from './pages/profile.jsx';
 import ResearchAreas from './pages/research-areas.jsx';
